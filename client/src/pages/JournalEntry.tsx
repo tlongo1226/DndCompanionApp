@@ -6,13 +6,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Journal, insertJournalSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Editor } from "@/components/Editor";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft } from "lucide-react";
+
+function extractTitle(markdown: string): string {
+  const match = markdown.match(/^#\s+(.+)$/m);
+  return match ? match[1].trim() : "Untitled Entry";
+}
 
 export default function JournalEntry() {
   const [, setLocation] = useLocation();
@@ -42,7 +47,11 @@ export default function JournalEntry() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof form.getValues) => {
-      const res = await apiRequest("POST", "/api/journals", data);
+      const journalData = {
+        ...data,
+        title: extractTitle(data.content),
+      };
+      const res = await apiRequest("POST", "/api/journals", journalData);
       return res.json();
     },
     onSuccess: () => {
@@ -57,7 +66,11 @@ export default function JournalEntry() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: typeof form.getValues) => {
-      const res = await apiRequest("PATCH", `/api/journals/${params?.id}`, data);
+      const journalData = {
+        ...data,
+        title: extractTitle(data.content),
+      };
+      const res = await apiRequest("PATCH", `/api/journals/${params?.id}`, journalData);
       return res.json();
     },
     onSuccess: () => {
@@ -89,23 +102,21 @@ export default function JournalEntry() {
 
   return (
     <div className="container p-6 mx-auto">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+
       <Card>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter journal title" />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="content"

@@ -1,21 +1,6 @@
 {
   "variant": "professional",
-  "primary": "hsl(32, 95%, 44%)",
-  "appearance": "light",
-  "radius": 0.5,
-  "colors": {
-    "sidebar": {
-      "background": "hsl(30, 20%, 12%)",
-      "foreground": "hsl(32, 95%, 94%)",
-      "border": "hsl(30, 15%, 20%)",
-      "primary": "hsl(32, 95%, 44%)",
-      "primary-foreground": "hsl(32, 95%, 94%)"
-    },
-    "background": "hsl(30, 20%, 97%)",
-    "foreground": "hsl(30, 10%, 10%)",
-    "card": "hsl(0, 0%, 100%)",
-    "card-foreground": "hsl(30, 10%, 10%)",
-    "border": "hsl(30, 15%, 90%)",
-    "input": "hsl(30, 15%, 90%)"
-  }
+  "primary": "oklch(70% 0.1 290)",
+  "appearance": "dark",
+  "radius": 0.5
 }

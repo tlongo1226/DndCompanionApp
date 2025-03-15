@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft } from "lucide-react";
 
 export default function EntityPage() {
   const [, setLocation] = useLocation();
@@ -92,6 +93,17 @@ export default function EntityPage() {
 
   return (
     <div className="container p-6 mx-auto">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation(`/category/${type}`)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to {type}s
+        </Button>
+      </div>
+
       <Card>
         <CardContent className="p-6">
           <Form {...form}>

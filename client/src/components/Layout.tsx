@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ScrollText, Users, Building, Map, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,11 +10,19 @@ interface NavLinkProps {
 }
 
 function NavLink({ href, icon, children }: NavLinkProps) {
+  const [location] = useLocation();
+  const isActive = location === href;
+
   return (
     <Link href={href}>
       <Button
         variant="ghost"
-        className="w-full justify-start gap-2 font-medievalsharp"
+        className={cn(
+          "w-full justify-start gap-2 transition-colors",
+          "text-sidebar-foreground hover:text-sidebar-foreground/90",
+          "hover:bg-sidebar-accent/20",
+          isActive && "bg-sidebar-accent/30 font-semibold"
+        )}
       >
         {icon}
         {children}
@@ -28,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen grid grid-cols-[240px_1fr]">
       <aside className="bg-sidebar border-r border-sidebar-border p-4 flex flex-col gap-2">
         <Link href="/">
-          <h1 className="text-2xl font-bold text-sidebar-foreground mb-6 font-medievalsharp">
+          <h1 className="text-2xl font-bold text-sidebar-foreground mb-6 hover:text-sidebar-foreground/90 transition-colors">
             D&D Journal
           </h1>
         </Link>
@@ -36,19 +44,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <NavLink href="/" icon={<ScrollText className="h-4 w-4" />}>
           Journal Entries
         </NavLink>
-        
+
         <NavLink href="/category/npc" icon={<Users className="h-4 w-4" />}>
           NPCs
         </NavLink>
-        
+
         <NavLink href="/category/creature" icon={<Sword className="h-4 w-4" />}>
           Creatures
         </NavLink>
-        
+
         <NavLink href="/category/location" icon={<Map className="h-4 w-4" />}>
           Locations
         </NavLink>
-        
+
         <NavLink href="/category/organization" icon={<Building className="h-4 w-4" />}>
           Organizations
         </NavLink>
