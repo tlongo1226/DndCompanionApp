@@ -11,17 +11,17 @@ interface NavLinkProps {
 
 function NavLink({ href, icon, children }: NavLinkProps) {
   const [location] = useLocation();
-  const isActive = location === href;
+  const isActive = location.startsWith(href);
 
   return (
     <Link href={href}>
       <Button
-        variant="ghost"
+        variant={isActive ? "secondary" : "ghost"}
         className={cn(
-          "w-full justify-start gap-2 transition-colors",
-          "text-sidebar-foreground hover:text-sidebar-foreground/90",
-          "hover:bg-sidebar-accent/20",
-          isActive && "bg-sidebar-accent/30 font-semibold"
+          "w-full justify-start gap-2",
+          "text-white hover:text-white",
+          "bg-opacity-90 hover:bg-opacity-100",
+          isActive && "bg-sidebar-accent text-white font-semibold"
         )}
       >
         {icon}
@@ -34,9 +34,9 @@ function NavLink({ href, icon, children }: NavLinkProps) {
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen grid grid-cols-[240px_1fr]">
-      <aside className="bg-sidebar border-r border-sidebar-border p-4 flex flex-col gap-2">
+      <aside className="bg-slate-800 border-r border-slate-700 p-4 flex flex-col gap-2">
         <Link href="/">
-          <h1 className="text-2xl font-bold text-sidebar-foreground mb-6 hover:text-sidebar-foreground/90 transition-colors">
+          <h1 className="text-2xl font-bold text-white mb-6 hover:text-amber-400 transition-colors">
             D&D Journal
           </h1>
         </Link>

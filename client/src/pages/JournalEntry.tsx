@@ -15,8 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
 function extractTitle(markdown: string): string {
-  const match = markdown.match(/^#\s+(.+)$/m);
-  return match ? match[1].trim() : "Untitled Entry";
+  // Match any level header at the start of the content
+  const match = markdown.match(/^(#{1,6})\s+(.+)$/m);
+  return match ? match[2].trim() : "Untitled Entry";
 }
 
 export default function JournalEntry() {

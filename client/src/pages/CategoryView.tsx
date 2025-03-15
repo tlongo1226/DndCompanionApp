@@ -1,10 +1,10 @@
 import { useRoute } from "wouter";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Entity, EntityType } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const categoryIcons = {
@@ -16,6 +16,7 @@ const categoryIcons = {
 
 export default function CategoryView() {
   const [, params] = useRoute("/category/:type");
+  const [, setLocation] = useLocation();
   const type = params?.type as EntityType;
 
   const { data: entities, isLoading } = useQuery<Entity[]>({
@@ -45,6 +46,17 @@ export default function CategoryView() {
 
   return (
     <div className="container p-6 mx-auto">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-bold capitalize flex items-center gap-2">
           <span>{categoryIcons[type]}</span>
@@ -61,7 +73,7 @@ export default function CategoryView() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {entities?.map((entity) => (
           <Link key={entity.id} href={`/entity/${type}/${entity.id}`}>
-            <Card className="cursor-pointer hover:bg-accent">
+            <Card className="cursor-pointer hover:bg-accent transition-colors">
               <CardHeader>
                 <CardTitle>{entity.name}</CardTitle>
               </CardHeader>
