@@ -30,6 +30,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { ArrowLeft } from "lucide-react";
 
 export default function AccountSettings() {
   const { user } = useAuth();
@@ -57,10 +58,29 @@ export default function AccountSettings() {
     },
   });
 
+  // Function to update theme
+  const updateTheme = (key: string, value: string) => {
+    const currentTheme = JSON.parse(localStorage.getItem('theme') || '{}');
+    const newTheme = { ...currentTheme, [key]: value };
+    localStorage.setItem('theme', JSON.stringify(newTheme));
+    document.documentElement.setAttribute(`data-${key}`, value);
+  };
+
   return (
     <div className="container p-6 mx-auto space-y-6">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+
       <h1 className="text-3xl font-bold">Account Settings</h1>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
@@ -89,7 +109,10 @@ export default function AccountSettings() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Theme Variant</label>
-              <Select defaultValue="professional">
+              <Select
+                defaultValue="professional"
+                onValueChange={(value) => updateTheme('variant', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select theme variant" />
                 </SelectTrigger>
@@ -103,7 +126,10 @@ export default function AccountSettings() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Appearance</label>
-              <Select defaultValue="dark">
+              <Select
+                defaultValue="dark"
+                onValueChange={(value) => updateTheme('appearance', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select appearance" />
                 </SelectTrigger>
