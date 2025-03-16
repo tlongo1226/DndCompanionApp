@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { useForm } from "react-hook-form";
@@ -16,65 +16,132 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// EntityPage handles both creation and editing of entities (NPCs, Creatures, Locations, Organizations)
+// Autocomplete input component
+function AutocompleteInput({
+  value,
+  onChange,
+  suggestions,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  suggestions: string[];
+  placeholder?: string;
+}) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const filteredSuggestions = suggestions.filter(
+    suggestion => 
+      suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
+      suggestion.toLowerCase() !== inputValue.toLowerCase()
+  );
+
+  return (
+    <div className="relative">
+      <Input
+        value={inputValue}
+        onChange={(e) => {
+          setInputValue(e.target.value);
+          onChange(e.target.value);
+          setShowSuggestions(true);
+        }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => {
+          // Delay hiding suggestions to allow clicking them
+          setTimeout(() => setShowSuggestions(false), 200);
+        }}
+        placeholder={placeholder}
+      />
+      {showSuggestions && filteredSuggestions.length > 0 && (
+        <Card className="absolute z-10 w-full mt-1">
+          <CardContent className="p-0">
+            <div className="max-h-48 overflow-y-auto">
+              {filteredSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  className={cn(
+                    "w-full text-left px-3 py-2 hover:bg-accent",
+                    "transition-colors"
+                  )}
+                  onClick={() => {
+                    setInputValue(suggestion);
+                    onChange(suggestion);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// EntityPage component
 export default function EntityPage() {
-  // Navigation and routing hooks
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/entity/:type/:id/edit");
   const { toast } = useToast();
-
-  // Check if we're creating a new entity or editing an existing one
-  const isNew = params?.id === "new";
-  // Validate that the type from URL is a valid EntityType
   const type = entityTypes.includes(params?.type as EntityType) ? params?.type as EntityType : null;
 
-  // Initialize the form with react-hook-form and zod validation
+  // Initialize form
   const form = useForm({
     resolver: zodResolver(insertEntitySchema),
     defaultValues: {
       name: "",
-      type: type || "npc", // Set the type from the URL parameter, default to "npc" if invalid
+      type: type || "npc",
       description: "",
-      // Get property template based on entity type
       properties: type ? entityTemplates[type] : entityTemplates.npc,
       tags: [],
     },
   });
 
-  // Fetch entity data if we're editing an existing entity
+  // Fetch existing NPCs to get race suggestions
+  const { data: npcs } = useQuery<Entity[]>({
+    queryKey: ["/api/entities", "npc"],
+    queryFn: async () => {
+      const res = await fetch("/api/entities?type=npc");
+      if (!res.ok) throw new Error("Failed to fetch NPCs");
+      return res.json();
+    },
+    enabled: type === "npc",
+  });
+
+  // Get unique races from existing NPCs
+  const raceOptions = [...new Set(npcs?.map(npc => npc.properties.race).filter(Boolean) || [])];
+
+  // Rest of your existing queries...
   const { data: entity, isLoading } = useQuery<Entity>({
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !isNew && !!params?.id,
   });
 
-  // Fetch locations for organization form
   const { data: locations } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "location"],
-    queryFn: async () => {
-      const res = await fetch("/api/entities?type=location");
-      if (!res.ok) throw new Error("Failed to fetch locations");
-      return res.json();
-    },
-    enabled: type === "organization", // Only fetch locations for organization form
+    enabled: type === "organization",
   });
 
-  // Fetch organizations for location form
   const { data: organizations } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "organization"],
-    queryFn: async () => {
-      const res = await fetch("/api/entities?type=organization");
-      if (!res.ok) throw new Error("Failed to fetch organizations");
-      return res.json();
-    },
-    enabled: type === "location" || type === "npc", // Only fetch organizations for location and npc forms
+    enabled: type === "location" || type === "npc",
   });
+
+  const isNew = params?.id === "new";
 
   useEffect(() => {
     if (entity) {
       form.reset(entity);
     } else if (type === "organization") {
-      // Set default values for new organization
       form.reset({
         name: "",
         type: type,
@@ -85,14 +152,12 @@ export default function EntityPage() {
     }
   }, [entity, form, type]);
 
-  // Mutation for creating a new entity
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/entities", data);
       return res.json();
     },
     onSuccess: () => {
-      // Invalidate the entities cache to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ["/api/entities"] });
       toast({
         title: "Success",
@@ -102,7 +167,6 @@ export default function EntityPage() {
     },
   });
 
-  // Mutation for updating an existing entity
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("PATCH", `/api/entities/${params?.id}`, data);
@@ -118,7 +182,6 @@ export default function EntityPage() {
     },
   });
 
-  // Handle form submission
   const onSubmit = (data: any) => {
     if (isNew) {
       createMutation.mutate(data);
@@ -127,7 +190,6 @@ export default function EntityPage() {
     }
   };
 
-  // Show loading state while fetching entity data
   if (!isNew && isLoading) {
     return (
       <div className="container p-6 mx-auto space-y-4">
@@ -137,7 +199,6 @@ export default function EntityPage() {
     );
   }
 
-  // If type is not valid, show error message
   if (!type) {
     return (
       <div className="container p-6 mx-auto">
@@ -170,7 +231,6 @@ export default function EntityPage() {
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Name field */}
               <FormField
                 control={form.control}
                 name="name"
@@ -184,7 +244,6 @@ export default function EntityPage() {
                 )}
               />
 
-              {/* Description field */}
               <FormField
                 control={form.control}
                 name="description"
@@ -202,9 +261,30 @@ export default function EntityPage() {
                 )}
               />
 
-              {/* Dynamic property fields based on entity type */}
               {Object.entries(entityTemplates[type]).map(([key]) => {
-                // Special handling for relationship field in NPCs
+                if (key === "race" && type === "npc") {
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={`properties.${key}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Race</FormLabel>
+                          <FormControl>
+                            <AutocompleteInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              suggestions={raceOptions}
+                              placeholder="Enter race"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
+
                 if (key === "relationship" && type === "npc") {
                   return (
                     <FormField
@@ -240,7 +320,6 @@ export default function EntityPage() {
                   );
                 }
 
-                // Special handling for organization membership in NPCs
                 if (key === "organization" && type === "npc") {
                   return (
                     <FormField
@@ -277,7 +356,6 @@ export default function EntityPage() {
                   );
                 }
 
-                // Special handling for headquarters field in organizations
                 if (key === "headquarters" && type === "organization") {
                   return (
                     <FormField
@@ -314,7 +392,6 @@ export default function EntityPage() {
                   );
                 }
 
-                // Special handling for activeOrganizations field in locations
                 if (key === "activeOrganizations" && type === "location") {
                   return (
                     <FormField
@@ -348,7 +425,6 @@ export default function EntityPage() {
                                 ))}
                               </SelectContent>
                             </Select>
-                            {/* Display selected organizations with remove option */}
                             {field.value && field.value.length > 0 && (
                               <div className="mt-2 space-y-2">
                                 {field.value.map((orgId: string) => {
@@ -377,7 +453,6 @@ export default function EntityPage() {
                   );
                 }
 
-                // Regular property fields
                 return (
                   <FormField
                     key={key}
@@ -395,7 +470,6 @@ export default function EntityPage() {
                 );
               })}
 
-              {/* Form actions */}
               <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
