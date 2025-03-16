@@ -24,13 +24,13 @@ export default function CategoryView() {
   const [, setLocation] = useLocation();
   const type = params?.type as EntityType;
 
-  // Filter states for NPCs
+  // Update the filter states to use "0" as default
   const [filters, setFilters] = useState({
     race: "",
     class: "",
     alignment: "",
-    relationship: "",
-    organization: "",
+    relationship: "0",
+    organization: "0",
   });
 
   const { data: entities, isLoading } = useQuery<Entity[]>({
@@ -53,14 +53,18 @@ export default function CategoryView() {
     enabled: type === "npc",
   });
 
-  // Filter entities based on selected filters
+  // Update the filtering logic to handle "0" as "Any"
   const filteredEntities = entities?.filter(entity => {
     if (type !== "npc") return true;
 
     const properties = entity.properties;
     return Object.entries(filters).every(([key, value]) => {
+      if (value === "0") return true; // Return true for "Any" selection
       if (!value) return true;
       if (key === "organization") {
+        return properties[key] === value;
+      }
+      if (key === "relationship") {
         return properties[key] === value;
       }
       return properties[key]?.toLowerCase().includes(value.toLowerCase());
@@ -151,7 +155,7 @@ export default function CategoryView() {
                     <SelectValue placeholder="Select relationship" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="0">Any</SelectItem>
                     {relationshipTypes.map((relType) => (
                       <SelectItem key={relType} value={relType}>
                         {capitalize(relType)}
@@ -171,7 +175,7 @@ export default function CategoryView() {
                     <SelectValue placeholder="Select organization" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="0">Any</SelectItem>
                     {organizations?.map((org) => (
                       <SelectItem key={org.id} value={org.id.toString()}>
                         {org.name || "Untitled"}
