@@ -93,6 +93,7 @@ export default function EntityPage() {
   const [, params] = useRoute("/entity/:type/:id/edit");
   const { toast } = useToast();
   const type = entityTypes.includes(params?.type as EntityType) ? params?.type as EntityType : null;
+  const isNew = params?.id === "new"; // Moved this declaration to the top
 
   // Initialize form
   const form = useForm({
@@ -135,8 +136,6 @@ export default function EntityPage() {
     queryKey: ["/api/entities", "organization"],
     enabled: type === "location" || type === "npc",
   });
-
-  const isNew = params?.id === "new";
 
   useEffect(() => {
     if (entity) {
