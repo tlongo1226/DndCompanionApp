@@ -11,18 +11,24 @@ import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { Header } from "@/components/ui/header";
 
 function Router() {
   return (
-    <Switch>
-      <ProtectedRoute path="/" component={Home} />
-      <ProtectedRoute path="/journal/:id" component={JournalEntry} />
-      <ProtectedRoute path="/category/:type" component={CategoryView} />
-      <ProtectedRoute path="/entity/:type/:id" component={EntityView} />
-      <ProtectedRoute path="/entity/:type/:id/edit" component={EntityPage} />
-      <Route path="/auth" component={AuthPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <Header />
+      <main className="min-h-[calc(100vh-4rem)]">
+        <Switch>
+          <ProtectedRoute path="/" component={Home} />
+          <ProtectedRoute path="/journal/:id" component={JournalEntry} />
+          <ProtectedRoute path="/category/:type" component={CategoryView} />
+          <ProtectedRoute path="/entity/:type/:id" component={EntityView} />
+          <ProtectedRoute path="/entity/:type/:id/edit" component={EntityPage} />
+          <Route path="/auth" component={AuthPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </>
   );
 }
 

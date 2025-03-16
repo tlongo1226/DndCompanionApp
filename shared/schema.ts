@@ -50,10 +50,19 @@ export const insertEntitySchema = createInsertSchema(entities).omit({
   created: true 
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  created: true
-});
+// Update the insertUserSchema definition
+export const insertUserSchema = createInsertSchema(users)
+  .extend({
+    password: z.string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+  })
+  .omit({
+    id: true,
+    created: true
+  });
 
 export type Journal = typeof journals.$inferSelect;
 export type InsertJournal = z.infer<typeof insertJournalSchema>;
