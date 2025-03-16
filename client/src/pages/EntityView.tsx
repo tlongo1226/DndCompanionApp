@@ -100,12 +100,30 @@ export default function EntityView() {
     enabled: !!params?.id,
   });
 
-  // Fetch headquarters data
+  // Fetch headquarters data for organizations
   const { data: headquarters } = useQuery<Entity>({
     queryKey: [`/api/entities/${entity?.properties.headquarters}`],
     enabled: type === "organization" && !!entity?.properties.headquarters && entity?.properties.headquarters !== "0",
   });
 
+  // Fetch active organizations data for locations
+  const { data: activeOrganizations } = useQuery<Entity[]>({
+    queryKey: ["/api/entities", "organizations-in-location"],
+    queryFn: async () => {
+      const orgIds = entity?.properties.activeOrganizations || [];
+      if (!orgIds.length) return [];
+
+      const orgs = await Promise.all(
+        orgIds.map(async (id: string) => {
+          const res = await fetch(`/api/entities/${id}`);
+          if (!res.ok) return null;
+          return res.json();
+        })
+      );
+      return orgs.filter(Boolean);
+    },
+    enabled: type === "location" && !!entity?.properties.activeOrganizations?.length,
+  });
 
   // Mutation for updating individual fields
   const updateMutation = useMutation({
@@ -196,6 +214,18 @@ export default function EntityView() {
                     ) : (
                       <div className="text-muted-foreground">No headquarters set</div>
                     )
+                  ) : key === "activeOrganizations" && type === "location" ? (
+                    <div className="space-y-2">
+                      {activeOrganizations?.length ? (
+                        activeOrganizations.map((org) => (
+                          <Link key={org.id} href={`/entity/organization/${org.id}`}>
+                            <div className="text-primary hover:underline">{org.name}</div>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="text-muted-foreground">No active organizations</div>
+                      )}
+                    </div>
                   ) : (
                     <EditableField
                       value={entity.properties[key]}

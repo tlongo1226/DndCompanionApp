@@ -59,6 +59,7 @@ export const entityTemplates: Record<EntityType, Record<string, any>> = {
     population: "",
     government: "",
     description: "",
+    activeOrganizations: [], // Array to store organization IDs
   },
   organization: {
     type: "",

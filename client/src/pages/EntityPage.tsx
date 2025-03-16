@@ -15,6 +15,7 @@ import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X } from "lucide-react";
 
 // EntityPage handles both creation and editing of entities (NPCs, Creatures, Locations, Organizations)
 export default function EntityPage() {
@@ -56,6 +57,17 @@ export default function EntityPage() {
       return res.json();
     },
     enabled: type === "organization", // Only fetch locations for organization form
+  });
+
+  // Fetch organizations for location form
+  const { data: organizations } = useQuery<Entity[]>({
+    queryKey: ["/api/entities", "organization"],
+    queryFn: async () => {
+      const res = await fetch("/api/entities?type=organization");
+      if (!res.ok) throw new Error("Failed to fetch organizations");
+      return res.json();
+    },
+    enabled: type === "location", // Only fetch organizations for location form
   });
 
 
@@ -191,7 +203,7 @@ export default function EntityPage() {
 
               {/* Dynamic property fields based on entity type */}
               {Object.entries(entityTemplates[type]).map(([key]) => {
-                // Special handling for headquarters field
+                // Special handling for headquarters field in organizations
                 if (key === "headquarters" && type === "organization") {
                   return (
                     <FormField
@@ -203,7 +215,7 @@ export default function EntityPage() {
                           <FormLabel>Headquarters</FormLabel>
                           <FormControl>
                             <Select
-                              value={field.value || "0"} // Use "0" as default/none value
+                              value={field.value || "0"}
                               onValueChange={field.onChange}
                             >
                               <SelectTrigger>
@@ -212,8 +224,8 @@ export default function EntityPage() {
                               <SelectContent>
                                 <SelectItem value="0">None</SelectItem>
                                 {locations?.map((location) => (
-                                  <SelectItem 
-                                    key={location.id} 
+                                  <SelectItem
+                                    key={location.id}
                                     value={location.id.toString()}
                                   >
                                     {location.name}
@@ -222,6 +234,69 @@ export default function EntityPage() {
                               </SelectContent>
                             </Select>
                           </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
+
+                // Special handling for activeOrganizations field in locations
+                if (key === "activeOrganizations" && type === "location") {
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={`properties.${key}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Active Organizations</FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={(value) => {
+                                const currentValues = field.value || [];
+                                if (!currentValues.includes(value)) {
+                                  field.onChange([...currentValues, value]);
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Add an organization" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {organizations?.map((org) => (
+                                  <SelectItem
+                                    key={org.id}
+                                    value={org.id.toString()}
+                                  >
+                                    {org.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          {/* Display selected organizations with remove option */}
+                          {field.value && field.value.length > 0 && (
+                            <div className="mt-2 space-y-2">
+                              {field.value.map((orgId: string) => {
+                                const org = organizations?.find(o => o.id.toString() === orgId);
+                                return org && (
+                                  <div key={orgId} className="flex items-center justify-between bg-accent/50 p-2 rounded-md">
+                                    <span>{org.name}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        field.onChange(field.value.filter((id: string) => id !== orgId));
+                                      }}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </FormItem>
                       )}
                     />
