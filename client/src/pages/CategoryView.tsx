@@ -62,7 +62,7 @@ export default function CategoryView() {
           <span>{categoryIcons[type]}</span>
           {type}s
         </h1>
-        <Link href={`/entity/${type}/new/edit`}> {/*This line is changed*/}
+        <Link href={`/entity/${type}/new/edit`}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             New {type}
@@ -75,11 +75,11 @@ export default function CategoryView() {
           <Link key={entity.id} href={`/entity/${type}/${entity.id}`}>
             <Card className="cursor-pointer hover:bg-accent transition-colors">
               <CardHeader>
-                <CardTitle>{entity.name}</CardTitle>
+                <CardTitle>{entity.name || "Untitled"}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-3">
-                  {entity.description}
+                  {entity.description || "No description"}
                 </p>
               </CardContent>
             </Card>

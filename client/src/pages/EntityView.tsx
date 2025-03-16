@@ -15,15 +15,14 @@ import { capitalize } from "@/lib/utils";
 
 // EditableField component allows inline editing of entity fields
 interface EditableFieldProps {
-  value: string;
+  value: string | undefined;
   onSave: (value: string) => void;
   multiline?: boolean;
 }
 
 function EditableField({ value, onSave, multiline }: EditableFieldProps) {
-  // Track editing state and current value
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
+  const [editValue, setEditValue] = useState(value || "");
 
   const handleSave = () => {
     onSave(editValue);
@@ -31,7 +30,7 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
   };
 
   const handleCancel = () => {
-    setEditValue(value);
+    setEditValue(value || "");
     setIsEditing(false);
   };
 
@@ -39,7 +38,9 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
   if (!isEditing) {
     return (
       <div className="group flex items-start gap-2">
-        <div className="flex-1 whitespace-pre-wrap">{value || "Not set"}</div>
+        <div className="flex-1 whitespace-pre-wrap">
+          {value || <span className="text-muted-foreground">Not set</span>}
+        </div>
         <Button
           variant="ghost"
           size="icon"
@@ -185,7 +186,7 @@ export default function EntityView() {
         <CardHeader>
           <CardTitle>
             <EditableField
-              value={entity.name}
+              value={entity.name || "Untitled"}
               onSave={(value) => handleFieldUpdate("name", value)}
             />
           </CardTitle>
