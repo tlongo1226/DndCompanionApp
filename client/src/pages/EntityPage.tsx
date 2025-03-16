@@ -1,3 +1,5 @@
+import { useLocation } from "wouter";
+
 // Autocomplete input component for suggesting values while typing
 function AutocompleteInput({
   value,
