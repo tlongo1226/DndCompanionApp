@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Edit2, Check, X } from "lucide-react";
 import { capitalize } from "@/lib/utils";
 
+// EditableField component allows inline editing of entity fields
 interface EditableFieldProps {
   value: string;
   onSave: (value: string) => void;
@@ -20,6 +21,7 @@ interface EditableFieldProps {
 }
 
 function EditableField({ value, onSave, multiline }: EditableFieldProps) {
+  // Track editing state and current value
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
 
@@ -33,6 +35,7 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
     setIsEditing(false);
   };
 
+  // Display mode - shows value and edit button on hover
   if (!isEditing) {
     return (
       <div className="group flex items-start gap-2">
@@ -49,6 +52,7 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
     );
   }
 
+  // Edit mode - shows input/textarea and save/cancel buttons
   return (
     <div className="space-y-2">
       {multiline ? (
@@ -83,23 +87,27 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
   );
 }
 
+// Main entity view component
 export default function EntityView() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/entity/:type/:id");
   const { toast } = useToast();
   const type = params?.type as EntityType;
 
+  // Fetch entity data
   const { data: entity, isLoading } = useQuery<Entity>({
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !!params?.id,
   });
 
+  // Mutation for updating individual fields
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Entity>) => {
       const res = await apiRequest("PATCH", `/api/entities/${params?.id}`, data);
       return res.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ["/api/entities"] });
       toast({
         title: "Success",
@@ -108,6 +116,24 @@ export default function EntityView() {
     },
   });
 
+  // Handle field updates
+  const handleFieldUpdate = (field: string, value: string) => {
+    if (field.startsWith("properties.")) {
+      // Update a property field
+      const propertyKey = field.split(".")[1];
+      updateMutation.mutate({
+        properties: {
+          ...entity?.properties,
+          [propertyKey]: value
+        }
+      });
+    } else {
+      // Update a main field (name or description)
+      updateMutation.mutate({ [field]: value });
+    }
+  };
+
+  // Show loading state
   if (isLoading || !entity) {
     return (
       <div className="container p-6 mx-auto space-y-4">
@@ -116,20 +142,6 @@ export default function EntityView() {
       </div>
     );
   }
-
-  const handleFieldUpdate = (field: string, value: string) => {
-    if (field.startsWith("properties.")) {
-      const propertyKey = field.split(".")[1];
-      updateMutation.mutate({
-        properties: {
-          ...entity.properties,
-          [propertyKey]: value
-        }
-      });
-    } else {
-      updateMutation.mutate({ [field]: value });
-    }
-  };
 
   return (
     <div className="container p-6 mx-auto">

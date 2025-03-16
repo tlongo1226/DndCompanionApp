@@ -15,41 +15,51 @@ import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
+// EntityPage handles both creation and editing of entities (NPCs, Creatures, Locations, Organizations)
 export default function EntityPage() {
+  // Navigation and routing hooks
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/entity/:type/:id");
   const { toast } = useToast();
+
+  // Check if we're creating a new entity or editing an existing one
   const isNew = params?.id === "new";
   const type = params?.type as EntityType;
 
+  // Initialize the form with react-hook-form and zod validation
   const form = useForm({
     resolver: zodResolver(insertEntitySchema),
     defaultValues: {
       name: "",
-      type,
+      type, // Set the type from the URL parameter
       description: "",
-      properties: entityTemplates[type],
+      // Get property template based on entity type (npc, creature, location, organization)
+      properties: type ? entityTemplates[type] : {},
       tags: [],
     },
   });
 
+  // Fetch entity data if we're editing an existing entity
   const { data: entity, isLoading } = useQuery<Entity>({
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !isNew && !!params?.id,
   });
 
+  // Update form values when entity data is loaded
   useEffect(() => {
     if (entity) {
       form.reset(entity);
     }
   }, [entity, form]);
 
+  // Mutation for creating a new entity
   const createMutation = useMutation({
-    mutationFn: async (data: typeof form.getValues) => {
+    mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/entities", data);
       return res.json();
     },
     onSuccess: () => {
+      // Invalidate the entities cache to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ["/api/entities"] });
       toast({
         title: "Success",
@@ -59,8 +69,9 @@ export default function EntityPage() {
     },
   });
 
+  // Mutation for updating an existing entity
   const updateMutation = useMutation({
-    mutationFn: async (data: typeof form.getValues) => {
+    mutationFn: async (data: any) => {
       const res = await apiRequest("PATCH", `/api/entities/${params?.id}`, data);
       return res.json();
     },
@@ -74,7 +85,8 @@ export default function EntityPage() {
     },
   });
 
-  const onSubmit = (data: typeof form.getValues) => {
+  // Handle form submission
+  const onSubmit = (data: any) => {
     if (isNew) {
       createMutation.mutate(data);
     } else {
@@ -82,11 +94,21 @@ export default function EntityPage() {
     }
   };
 
+  // Show loading state while fetching entity data
   if (!isNew && isLoading) {
     return (
       <div className="container p-6 mx-auto space-y-4">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
+
+  // If type is not valid, prevent form from rendering
+  if (!type || !entityTemplates[type]) {
+    return (
+      <div className="container p-6 mx-auto">
+        <p>Invalid entity type</p>
       </div>
     );
   }
@@ -108,6 +130,7 @@ export default function EntityPage() {
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Name field */}
               <FormField
                 control={form.control}
                 name="name"
@@ -121,6 +144,7 @@ export default function EntityPage() {
                 )}
               />
 
+              {/* Description field */}
               <FormField
                 control={form.control}
                 name="description"
@@ -138,6 +162,7 @@ export default function EntityPage() {
                 )}
               />
 
+              {/* Dynamic property fields based on entity type */}
               {Object.entries(entityTemplates[type]).map(([key]) => (
                 <FormField
                   key={key}
@@ -154,6 +179,7 @@ export default function EntityPage() {
                 />
               ))}
 
+              {/* Form actions */}
               <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"

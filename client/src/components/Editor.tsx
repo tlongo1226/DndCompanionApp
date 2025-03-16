@@ -8,31 +8,35 @@ import { useQuery } from "@tanstack/react-query";
 import { Entity } from "@shared/schema";
 import { Link } from "wouter";
 
+// Interface for tracking @ mention position and search text
+interface MentionMatch {
+  index: number;  // Position in the text where the @ mention starts
+  text: string;   // The text being typed after the @ symbol
+}
+
 interface EditorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-interface MentionMatch {
-  index: number;
-  text: string;
-}
-
 export function Editor({ value, onChange }: EditorProps) {
+  // State for tracking active @ mention
   const [mentionSearch, setMentionSearch] = useState<MentionMatch | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Fetch all entities for @ mention suggestions
   const { data: entities } = useQuery<Entity[]>({
     queryKey: ["/api/entities"],
   });
 
-  // Find @ mentions in the text and their positions
+  // Monitor text input for @ mentions
   useEffect(() => {
     if (!textareaRef.current) return;
 
     const textarea = textareaRef.current;
     const cursorPos = textarea.selectionStart;
     const textBeforeCursor = value.slice(0, cursorPos);
+    // Match @ followed by any word characters
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
 
     if (mentionMatch) {
@@ -45,17 +49,18 @@ export function Editor({ value, onChange }: EditorProps) {
     }
   }, [value]);
 
-  // Filter entities based on mention search
+  // Filter entities based on what user has typed after @
   const matchingEntities = mentionSearch && entities 
     ? entities.filter(e => 
         e.name.toLowerCase().includes(mentionSearch.text.toLowerCase())
       )
     : [];
 
-  // Handle selecting an entity from suggestions
+  // Handle selecting an entity from the suggestion list
   const handleMentionSelect = (entity: Entity) => {
     if (!mentionSearch || !textareaRef.current) return;
 
+    // Replace the @mention text with a markdown link to the entity
     const newValue = 
       value.slice(0, mentionSearch.index) + 
       `@[${entity.name}](entity/${entity.type}/${entity.id})` +
@@ -65,11 +70,13 @@ export function Editor({ value, onChange }: EditorProps) {
     setMentionSearch(null);
   };
 
-  // Custom markdown component to handle entity links
+  // Custom component to render entity links in the preview
   const MarkdownLink = ({ href, children }: { href: string, children: React.ReactNode }) => {
     if (href.startsWith('entity/')) {
+      // Internal entity links
       return <Link href={`/${href}`} className="text-primary hover:underline">{children}</Link>;
     }
+    // External links
     return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
   };
 
@@ -87,6 +94,7 @@ export function Editor({ value, onChange }: EditorProps) {
           placeholder="Write your journal entry in markdown..."
           className="min-h-[400px] font-mono"
         />
+        {/* Show entity suggestions when @ is typed */}
         {mentionSearch && matchingEntities.length > 0 && (
           <Card className="absolute z-10 mt-1 w-64 max-h-48 overflow-y-auto">
             <div className="p-2 space-y-1">
