@@ -18,7 +18,7 @@ export const entities = pgTable("entities", {
   name: text("name").notNull(),
   type: text("type", { enum: entityTypes }).notNull(),
   description: text("description").notNull(),
-  properties: json("properties").notNull().$type<Record<string, any>>(), // Changed to Record<string, any> to accommodate locationId
+  properties: json("properties").notNull().$type<Record<string, any>>(),
   tags: text("tags").array().notNull(),
   created: timestamp("created").notNull().defaultNow(),
 });
@@ -38,7 +38,7 @@ export type InsertJournal = z.infer<typeof insertJournalSchema>;
 export type Entity = typeof entities.$inferSelect;
 export type InsertEntity = z.infer<typeof insertEntitySchema>;
 
-export const entityTemplates: Record<EntityType, Record<string, string>> = {
+export const entityTemplates: Record<EntityType, Record<string, any>> = {
   npc: {
     race: "",
     class: "",
@@ -66,6 +66,5 @@ export const entityTemplates: Record<EntityType, Record<string, string>> = {
     headquarters: "", 
     leader: "",
     goals: "",
-    locationId: "", // Added locationId field
   },
 };

@@ -59,12 +59,20 @@ export default function EntityPage() {
   });
 
 
-  // Update form values when entity data is loaded
   useEffect(() => {
     if (entity) {
       form.reset(entity);
+    } else if (type === "organization") {
+      // Set default values for new organization
+      form.reset({
+        name: "",
+        type: type,
+        description: "",
+        properties: entityTemplates[type],
+        tags: [],
+      });
     }
-  }, [entity, form]);
+  }, [entity, form, type]);
 
   // Mutation for creating a new entity
   const createMutation = useMutation({
@@ -182,50 +190,61 @@ export default function EntityPage() {
               />
 
               {/* Dynamic property fields based on entity type */}
-              {Object.entries(entityTemplates[type]).map(([key]) => (
-                <FormField
-                  key={key}
-                  control={form.control}
-                  name={`properties.${key}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="capitalize">{key}</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder={`Enter ${key}`} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              ))}
+              {Object.entries(entityTemplates[type]).map(([key]) => {
+                // Special handling for headquarters field
+                if (key === "headquarters" && type === "organization") {
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={`properties.${key}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Headquarters</FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a location" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">None</SelectItem>
+                                {locations?.map((location) => (
+                                  <SelectItem 
+                                    key={location.id} 
+                                    value={location.id.toString()}
+                                  >
+                                    {location.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
 
-              {type === 'organization' && (
-                <FormField
-                  control={form.control}
-                  name="properties.headquarters"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Headquarters</FormLabel>
-                      <FormControl>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a location" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {locations?.map((location) => (
-                              <SelectItem key={location.id} value={location.id.toString()}>
-                                {location.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              )}
+                // Regular property fields
+                return (
+                  <FormField
+                    key={key}
+                    control={form.control}
+                    name={`properties.${key}`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="capitalize">{key}</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder={`Enter ${key}`} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                );
+              })}
 
               {/* Form actions */}
               <div className="flex justify-end gap-2">
