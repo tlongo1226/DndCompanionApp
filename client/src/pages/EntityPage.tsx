@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Entity, insertEntitySchema, entityTemplates, EntityType } from "@shared/schema";
+import { Entity, insertEntitySchema, entityTemplates, EntityType, entityTypes } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -19,22 +19,23 @@ import { ArrowLeft } from "lucide-react";
 export default function EntityPage() {
   // Navigation and routing hooks
   const [, setLocation] = useLocation();
-  const [, params] = useRoute("/entity/:type/:id");
+  const [, params] = useRoute("/entity/:type/:id/edit");
   const { toast } = useToast();
 
   // Check if we're creating a new entity or editing an existing one
   const isNew = params?.id === "new";
-  const type = params?.type as EntityType;
+  // Validate that the type from URL is a valid EntityType
+  const type = entityTypes.includes(params?.type as EntityType) ? params?.type as EntityType : null;
 
   // Initialize the form with react-hook-form and zod validation
   const form = useForm({
     resolver: zodResolver(insertEntitySchema),
     defaultValues: {
       name: "",
-      type, // Set the type from the URL parameter
+      type: type || "npc", // Set the type from the URL parameter, default to "npc" if invalid
       description: "",
-      // Get property template based on entity type (npc, creature, location, organization)
-      properties: type ? entityTemplates[type] : {},
+      // Get property template based on entity type
+      properties: type ? entityTemplates[type] : entityTemplates.npc,
       tags: [],
     },
   });
@@ -104,11 +105,16 @@ export default function EntityPage() {
     );
   }
 
-  // If type is not valid, prevent form from rendering
-  if (!type || !entityTemplates[type]) {
+  // If type is not valid, show error message
+  if (!type) {
     return (
       <div className="container p-6 mx-auto">
-        <p>Invalid entity type</p>
+        <div className="flex items-center gap-2 text-destructive">
+          <p>Invalid entity type. Please return to home and try again.</p>
+          <Button variant="outline" onClick={() => setLocation("/")}>
+            Go Home
+          </Button>
+        </div>
       </div>
     );
   }
