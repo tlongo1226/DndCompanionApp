@@ -100,6 +100,13 @@ export default function EntityView() {
     enabled: !!params?.id,
   });
 
+  // Fetch headquarters data
+  const { data: headquarters } = useQuery<Entity>({
+    queryKey: [`/api/entities/${entity?.properties.headquarters}`],
+    enabled: type === "organization" && !!entity?.properties.headquarters,
+  });
+
+
   // Mutation for updating individual fields
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Entity>) => {
@@ -181,10 +188,20 @@ export default function EntityView() {
               {Object.entries(entityTemplates[type]).map(([key]) => (
                 <div key={key}>
                   <label className="text-sm font-medium capitalize">{key}</label>
-                  <EditableField
-                    value={entity.properties[key]}
-                    onSave={(value) => handleFieldUpdate(`properties.${key}`, value)}
-                  />
+                  {key === "headquarters" && type === "organization" ? (
+                    headquarters ? (
+                      <Link href={`/entity/location/${headquarters.id}`}>
+                        <div className="text-primary hover:underline">{headquarters.name}</div>
+                      </Link>
+                    ) : (
+                      <div>No headquarters set</div>
+                    )
+                  ) : (
+                    <EditableField
+                      value={entity.properties[key]}
+                      onSave={(value) => handleFieldUpdate(`properties.${key}`, value)}
+                    />
+                  )}
                 </div>
               ))}
             </div>

@@ -18,7 +18,7 @@ export const entities = pgTable("entities", {
   name: text("name").notNull(),
   type: text("type", { enum: entityTypes }).notNull(),
   description: text("description").notNull(),
-  properties: json("properties").notNull().$type<Record<string, string>>(),
+  properties: json("properties").notNull().$type<Record<string, any>>(), // Changed to Record<string, any> to accommodate locationId
   tags: text("tags").array().notNull(),
   created: timestamp("created").notNull().defaultNow(),
 });
@@ -63,8 +63,9 @@ export const entityTemplates: Record<EntityType, Record<string, string>> = {
   organization: {
     type: "",
     alignment: "",
-    headquarters: "",
+    headquarters: "", 
     leader: "",
     goals: "",
+    locationId: "", // Added locationId field
   },
 };

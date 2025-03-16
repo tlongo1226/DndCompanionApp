@@ -161,7 +161,8 @@ export default function JournalEntry() {
                         "prose-blockquote:border-l-2 prose-blockquote:border-primary",
                         "prose-blockquote:pl-6 prose-blockquote:italic",
                         "prose-code:bg-muted prose-code:rounded-md prose-code:px-1 prose-code:py-0.5",
-                        "prose-img:rounded-lg prose-img:shadow-md"
+                        "prose-img:rounded-lg prose-img:shadow-md",
+                        "border-0 shadow-none" // Remove border and shadow
                       )}>
                         <Editor 
                           value={field.value} 

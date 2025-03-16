@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // EntityPage handles both creation and editing of entities (NPCs, Creatures, Locations, Organizations)
 export default function EntityPage() {
@@ -45,6 +46,18 @@ export default function EntityPage() {
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !isNew && !!params?.id,
   });
+
+  // Fetch locations for organization form
+  const { data: locations } = useQuery<Entity[]>({
+    queryKey: ["/api/entities", "location"],
+    queryFn: async () => {
+      const res = await fetch("/api/entities?type=location");
+      if (!res.ok) throw new Error("Failed to fetch locations");
+      return res.json();
+    },
+    enabled: type === "organization", // Only fetch locations for organization form
+  });
+
 
   // Update form values when entity data is loaded
   useEffect(() => {
@@ -184,6 +197,35 @@ export default function EntityPage() {
                   )}
                 />
               ))}
+
+              {type === 'organization' && (
+                <FormField
+                  control={form.control}
+                  name="properties.headquarters"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Headquarters</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a location" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {locations?.map((location) => (
+                              <SelectItem key={location.id} value={location.id.toString()}>
+                                {location.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Form actions */}
               <div className="flex justify-end gap-2">
