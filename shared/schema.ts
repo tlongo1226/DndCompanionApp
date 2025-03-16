@@ -5,6 +5,9 @@ import { z } from "zod";
 export const entityTypes = ["npc", "creature", "location", "organization"] as const;
 export type EntityType = typeof entityTypes[number];
 
+export const relationshipTypes = ["ally", "acquaintance", "enemy"] as const;
+export type RelationshipType = typeof relationshipTypes[number];
+
 export const journals = pgTable("journals", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -45,6 +48,8 @@ export const entityTemplates: Record<EntityType, Record<string, any>> = {
     alignment: "",
     occupation: "",
     location: "",
+    relationship: "", 
+    organizationId: "", 
   },
   creature: {
     type: "",
@@ -59,7 +64,7 @@ export const entityTemplates: Record<EntityType, Record<string, any>> = {
     population: "",
     government: "",
     description: "",
-    activeOrganizations: [], // Array to store organization IDs
+    activeOrganizations: [], 
   },
   organization: {
     type: "",

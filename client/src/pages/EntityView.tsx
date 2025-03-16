@@ -126,6 +126,13 @@ export default function EntityView() {
     enabled: type === "location" && !!entity?.properties.activeOrganizations?.length,
   });
 
+  // Fetch organization data for NPCs
+  const { data: organization } = useQuery<Entity>({
+    queryKey: [`/api/entities/${entity?.properties.organizationId}`],
+    enabled: type === "npc" && !!entity?.properties.organizationId && entity?.properties.organizationId !== "0",
+  });
+
+
   // Mutation for updating individual fields
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Entity>) => {
@@ -227,6 +234,20 @@ export default function EntityView() {
                         <div className="text-muted-foreground">No active organizations</div>
                       )}
                     </div>
+                  ) : key === "relationship" && type === "npc" ? (
+                    <div className="text-foreground">
+                      {entity.properties[key] ? capitalize(entity.properties[key]) : (
+                        <span className="text-muted-foreground">No relationship set</span>
+                      )}
+                    </div>
+                  ) : key === "organizationId" && type === "npc" ? (
+                    organization ? (
+                      <Link href={`/entity/organization/${organization.id}`}>
+                        <div className="text-primary hover:underline">{organization.name || "Untitled"}</div>
+                      </Link>
+                    ) : (
+                      <div className="text-muted-foreground">No organization</div>
+                    )
                   ) : (
                     <EditableField
                       value={entity.properties[key]}

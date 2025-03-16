@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Entity, insertEntitySchema, entityTemplates, EntityType, entityTypes } from "@shared/schema";
+import { Entity, insertEntitySchema, entityTemplates, EntityType, entityTypes, relationshipTypes } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -67,9 +67,8 @@ export default function EntityPage() {
       if (!res.ok) throw new Error("Failed to fetch organizations");
       return res.json();
     },
-    enabled: type === "location", // Only fetch organizations for location form
+    enabled: type === "location" || type === "npc", // Only fetch organizations for location and npc forms
   });
-
 
   useEffect(() => {
     if (entity) {
@@ -152,6 +151,8 @@ export default function EntityPage() {
     );
   }
 
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
   return (
     <div className="container p-6 mx-auto">
       <div className="mb-6">
@@ -203,6 +204,79 @@ export default function EntityPage() {
 
               {/* Dynamic property fields based on entity type */}
               {Object.entries(entityTemplates[type]).map(([key]) => {
+                // Special handling for relationship field in NPCs
+                if (key === "relationship" && type === "npc") {
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={`properties.${key}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Relationship</FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value || ""}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select relationship type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {relationshipTypes.map((relType) => (
+                                  <SelectItem
+                                    key={relType}
+                                    value={relType}
+                                  >
+                                    {capitalize(relType)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
+
+                // Special handling for organization membership in NPCs
+                if (key === "organizationId" && type === "npc") {
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={`properties.${key}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Organization Membership</FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value || "0"}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select organization" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">None</SelectItem>
+                                {organizations?.map((org) => (
+                                  <SelectItem
+                                    key={org.id}
+                                    value={org.id.toString()}
+                                  >
+                                    {org.name || "Untitled"}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
+
                 // Special handling for headquarters field in organizations
                 if (key === "headquarters" && type === "organization") {
                   return (
@@ -274,29 +348,29 @@ export default function EntityPage() {
                                 ))}
                               </SelectContent>
                             </Select>
+                            {/* Display selected organizations with remove option */}
+                            {field.value && field.value.length > 0 && (
+                              <div className="mt-2 space-y-2">
+                                {field.value.map((orgId: string) => {
+                                  const org = organizations?.find(o => o.id.toString() === orgId);
+                                  return org && (
+                                    <div key={orgId} className="flex items-center justify-between bg-accent/50 p-2 rounded-md">
+                                      <span>{org.name}</span>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          field.onChange(field.value.filter((id: string) => id !== orgId));
+                                        }}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </FormControl>
-                          {/* Display selected organizations with remove option */}
-                          {field.value && field.value.length > 0 && (
-                            <div className="mt-2 space-y-2">
-                              {field.value.map((orgId: string) => {
-                                const org = organizations?.find(o => o.id.toString() === orgId);
-                                return org && (
-                                  <div key={orgId} className="flex items-center justify-between bg-accent/50 p-2 rounded-md">
-                                    <span>{org.name}</span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        field.onChange(field.value.filter((id: string) => id !== orgId));
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
                         </FormItem>
                       )}
                     />
