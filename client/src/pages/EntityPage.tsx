@@ -1,4 +1,20 @@
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Entity, EntityType, entityTypes, entityTemplates, insertEntitySchema, relationshipTypes } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, X } from "lucide-react";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 
 // Autocomplete input component for suggesting values while typing
 function AutocompleteInput({
