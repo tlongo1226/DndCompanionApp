@@ -12,6 +12,7 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { Header } from "@/components/ui/header";
+import AccountSettings from "@/pages/account-settings";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
           <ProtectedRoute path="/category/:type" component={CategoryView} />
           <ProtectedRoute path="/entity/:type/:id" component={EntityView} />
           <ProtectedRoute path="/entity/:type/:id/edit" component={EntityPage} />
+          <ProtectedRoute path="/account" component={AccountSettings} />
           <Route path="/auth" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>

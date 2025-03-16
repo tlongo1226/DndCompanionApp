@@ -170,5 +170,28 @@ export async function registerRoutes(app: Express) {
     res.status(204).end();
   });
 
+  // Add this route with the other user-related routes
+  app.delete("/api/user", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      // Delete all user's journals
+      const journals = await storage.getJournals(req.user.id);
+      await Promise.all(journals.map(journal => storage.deleteJournal(journal.id)));
+
+      // Delete all user's entities
+      const entities = await storage.getEntities(undefined, req.user.id);
+      await Promise.all(entities.map(entity => storage.deleteEntity(entity.id)));
+
+      // Logout the user
+      req.logout((err) => {
+        if (err) throw err;
+        res.sendStatus(200);
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
   return createServer(app);
 }

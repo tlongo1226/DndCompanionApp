@@ -180,9 +180,9 @@ export default function AuthPage() {
               Streamline your D&D campaign management with our comprehensive tools:
             </p>
             <ul>
-              <li>Create and manage NPCs, locations, and organizations</li>
-              <li>Track relationships and connections between entities</li>
-              <li>Keep detailed campaign journals</li>
+              <li>Create and manage NPCs, locations, and organizations (entities)</li>
+              <li>Track relationships and connections between entities you meet during your travels</li>
+              <li>Keep detailed campaign journals and easily link to entities you have created</li>
               <li>Organize your world-building elements</li>
             </ul>
           </CardContent>

@@ -1,6 +1,8 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
+import { Settings } from "lucide-react";
 
 export function Header() {
   const { user, logoutMutation } = useAuth();
@@ -22,13 +24,20 @@ export function Header() {
       <div className="container flex items-center justify-between h-16">
         <h1 className="text-xl font-bold">Welcome {user?.username}</h1>
         {user && (
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-          >
-            {logoutMutation.isPending ? "Logging out..." : "Logout"}
-          </Button>
+          <div className="flex items-center gap-4">
+            <Link href="/account">
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+            >
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
+          </div>
         )}
       </div>
     </header>
