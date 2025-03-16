@@ -7,16 +7,20 @@ import JournalEntry from "@/pages/JournalEntry";
 import CategoryView from "@/pages/CategoryView";
 import EntityPage from "@/pages/EntityPage";
 import EntityView from "@/pages/EntityView";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/journal/:id" component={JournalEntry} />
-      <Route path="/category/:type" component={CategoryView} />
-      <Route path="/entity/:type/:id" component={EntityView} />
-      <Route path="/entity/:type/:id/edit" component={EntityPage} />
+      <ProtectedRoute path="/" component={Home} />
+      <ProtectedRoute path="/journal/:id" component={JournalEntry} />
+      <ProtectedRoute path="/category/:type" component={CategoryView} />
+      <ProtectedRoute path="/entity/:type/:id" component={EntityView} />
+      <ProtectedRoute path="/entity/:type/:id/edit" component={EntityPage} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -25,8 +29,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
