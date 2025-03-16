@@ -17,9 +17,10 @@ interface MentionMatch {
 interface EditorProps {
   value: string;
   onChange: (value: string) => void;
+  defaultTab?: "write" | "preview";  // Added defaultTab prop
 }
 
-export function Editor({ value, onChange }: EditorProps) {
+export function Editor({ value, onChange, defaultTab = "write" }: EditorProps) {
   // State for tracking active @ mention
   const [mentionSearch, setMentionSearch] = useState<MentionMatch | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -81,7 +82,7 @@ export function Editor({ value, onChange }: EditorProps) {
   };
 
   return (
-    <Tabs defaultValue="write" className="w-full">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="write">Write</TabsTrigger>
         <TabsTrigger value="preview">Preview</TabsTrigger>

@@ -12,7 +12,9 @@ import { Editor } from "@/components/Editor";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from 'react-markdown';
 
 function extractTitle(markdown: string): string {
   // Match any level header at the start of the content
@@ -47,7 +49,7 @@ export default function JournalEntry() {
   }, [journal, form]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: typeof form.getValues) => {
+    mutationFn: async (data: any) => {
       const journalData = {
         ...data,
         title: extractTitle(data.content),
@@ -66,7 +68,7 @@ export default function JournalEntry() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: typeof form.getValues) => {
+    mutationFn: async (data: any) => {
       const journalData = {
         ...data,
         title: extractTitle(data.content),
@@ -84,7 +86,7 @@ export default function JournalEntry() {
     },
   });
 
-  const onSubmit = (data: typeof form.getValues) => {
+  const onSubmit = (data: any) => {
     if (isNew) {
       createMutation.mutate(data);
     } else {
@@ -116,35 +118,69 @@ export default function JournalEntry() {
 
       <Card>
         <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Editor value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+          {!isNew ? (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="flex justify-end mb-4">
+                  <Button type="submit" className="gap-2">
+                    <Edit2 className="h-4 w-4" />
+                    Save Changes
+                  </Button>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Card className={cn(
+                          "prose prose-stone dark:prose-invert max-w-none min-h-[400px] p-4",
+                          "prose-headings:scroll-m-20",
+                          "prose-p:text-muted-foreground prose-p:leading-7",
+                          "prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80",
+                          "prose-blockquote:border-l-2 prose-blockquote:border-primary",
+                          "prose-blockquote:pl-6 prose-blockquote:italic",
+                          "prose-code:bg-muted prose-code:rounded-md prose-code:px-1 prose-code:py-0.5",
+                          "prose-img:rounded-lg prose-img:shadow-md"
+                        )}>
+                          <Editor value={field.value} onChange={field.onChange} defaultTab="preview" />
+                        </Card>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Editor value={field.value} onChange={field.onChange} defaultTab="write" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setLocation("/")}
-                  type="button"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {isNew ? "Create" : "Update"} Entry
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation("/")}
+                    type="button"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    Create Entry
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
     </div>
