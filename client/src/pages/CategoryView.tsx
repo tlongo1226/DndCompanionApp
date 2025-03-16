@@ -62,7 +62,7 @@ export default function CategoryView() {
           <span>{categoryIcons[type]}</span>
           {type}s
         </h1>
-        <Link href={`/entity/${type}/new`}>
+        <Link href={`/entity/${type}/new/edit`}> {/*This line is changed*/}
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             New {type}

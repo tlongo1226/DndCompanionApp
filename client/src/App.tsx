@@ -6,6 +6,7 @@ import Home from "@/pages/Home";
 import JournalEntry from "@/pages/JournalEntry";
 import CategoryView from "@/pages/CategoryView";
 import EntityPage from "@/pages/EntityPage";
+import EntityView from "@/pages/EntityView";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -14,7 +15,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/journal/:id" component={JournalEntry} />
       <Route path="/category/:type" component={CategoryView} />
-      <Route path="/entity/:type/:id" component={EntityPage} />
+      <Route path="/entity/:type/:id" component={EntityView} />
+      <Route path="/entity/:type/:id/edit" component={EntityPage} />
       <Route component={NotFound} />
     </Switch>
   );
