@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -36,6 +36,23 @@ export default function AccountSettings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [currentTheme, setCurrentTheme] = useState({
+    variant: "professional",
+    appearance: "dark"
+  });
+
+  // Load current theme on component mount
+  useEffect(() => {
+    try {
+      const themeData = JSON.parse(localStorage.getItem('theme') || '{}');
+      setCurrentTheme({
+        variant: themeData.variant || 'professional',
+        appearance: themeData.appearance || 'dark'
+      });
+    } catch (e) {
+      console.error('Error loading theme:', e);
+    }
+  }, []);
 
   // Delete account mutation
   const deleteMutation = useMutation({
@@ -60,10 +77,12 @@ export default function AccountSettings() {
 
   // Function to update theme
   const updateTheme = (key: string, value: string) => {
-    const currentTheme = JSON.parse(localStorage.getItem('theme') || '{}');
     const newTheme = { ...currentTheme, [key]: value };
+    setCurrentTheme(newTheme);
     localStorage.setItem('theme', JSON.stringify(newTheme));
     document.documentElement.setAttribute(`data-${key}`, value);
+    // Force a page reload to apply the theme changes
+    window.location.reload();
   };
 
   return (
@@ -110,7 +129,7 @@ export default function AccountSettings() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Theme Variant</label>
               <Select
-                defaultValue="professional"
+                value={currentTheme.variant}
                 onValueChange={(value) => updateTheme('variant', value)}
               >
                 <SelectTrigger>
@@ -127,7 +146,7 @@ export default function AccountSettings() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Appearance</label>
               <Select
-                defaultValue="dark"
+                value={currentTheme.appearance}
                 onValueChange={(value) => updateTheme('appearance', value)}
               >
                 <SelectTrigger>
