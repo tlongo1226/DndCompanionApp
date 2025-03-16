@@ -43,14 +43,11 @@ export default function JournalEntry() {
 
   useEffect(() => {
     if (journal) {
-      // Only update form if values are different to avoid unnecessary rerenders
-      if (journal.content !== form.getValues().content) {
-        form.reset({
-          content: journal.content,
-          title: journal.title,
-          tags: journal.tags,
-        });
-      }
+      form.reset({
+        content: journal.content,
+        title: journal.title,
+        tags: journal.tags,
+      });
     }
   }, [journal, form]);
 
@@ -63,8 +60,9 @@ export default function JournalEntry() {
       const res = await apiRequest("POST", "/api/journals", journalData);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/journals"] });
+      queryClient.setQueryData([`/api/journals/${data.id}`], data);
       toast({
         title: "Success",
         description: "Journal entry created successfully",
@@ -82,8 +80,10 @@ export default function JournalEntry() {
       const res = await apiRequest("PATCH", `/api/journals/${params?.id}`, journalData);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate both the list and the individual entry
       queryClient.invalidateQueries({ queryKey: ["/api/journals"] });
+      queryClient.setQueryData([`/api/journals/${params?.id}`], data);
       toast({
         title: "Success",
         description: "Journal entry updated successfully",
@@ -155,8 +155,8 @@ export default function JournalEntry() {
                     <FormControl>
                       <Card className={cn(
                         "prose prose-stone dark:prose-invert max-w-none min-h-[400px] p-4",
-                        "prose-headings:scroll-m-20",
-                        "prose-p:text-muted-foreground prose-p:leading-7",
+                        "prose-headings:scroll-m-20 prose-headings:text-foreground",
+                        "prose-p:text-foreground prose-p:leading-7",
                         "prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80",
                         "prose-blockquote:border-l-2 prose-blockquote:border-primary",
                         "prose-blockquote:pl-6 prose-blockquote:italic",
