@@ -103,7 +103,7 @@ export default function EntityView() {
   // Fetch headquarters data
   const { data: headquarters } = useQuery<Entity>({
     queryKey: [`/api/entities/${entity?.properties.headquarters}`],
-    enabled: type === "organization" && !!entity?.properties.headquarters,
+    enabled: type === "organization" && !!entity?.properties.headquarters && entity?.properties.headquarters !== "0",
   });
 
 
@@ -194,7 +194,7 @@ export default function EntityView() {
                         <div className="text-primary hover:underline">{headquarters.name}</div>
                       </Link>
                     ) : (
-                      <div>No headquarters set</div>
+                      <div className="text-muted-foreground">No headquarters set</div>
                     )
                   ) : (
                     <EditableField

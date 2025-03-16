@@ -203,14 +203,14 @@ export default function EntityPage() {
                           <FormLabel>Headquarters</FormLabel>
                           <FormControl>
                             <Select
-                              value={field.value}
+                              value={field.value || "0"} // Use "0" as default/none value
                               onValueChange={field.onChange}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a location" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="0">None</SelectItem>
                                 {locations?.map((location) => (
                                   <SelectItem 
                                     key={location.id} 
