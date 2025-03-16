@@ -34,6 +34,7 @@ export default function AuthPage() {
     }
   }, [user, setLocation]);
 
+  // Initialize login form with validation schema
   const loginForm = useForm({
     resolver: zodResolver(
       insertUserSchema.pick({
@@ -43,6 +44,7 @@ export default function AuthPage() {
     ),
   });
 
+  // Initialize registration form with validation schema
   const registerForm = useForm({
     resolver: zodResolver(insertUserSchema),
   });
@@ -50,19 +52,23 @@ export default function AuthPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="grid w-full max-w-[900px] grid-cols-5 gap-6">
+        {/* Login/Register Card */}
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>Welcome to D&D Companion</CardTitle>
+            <CardTitle>D&D Companion</CardTitle>
             <CardDescription>
               Please sign in or create an account to continue
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
+              {/* Tab navigation */}
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
+
+              {/* Login Form */}
               <TabsContent value="login">
                 <Form {...loginForm}>
                   <form
@@ -71,6 +77,7 @@ export default function AuthPage() {
                     )}
                     className="space-y-4"
                   >
+                    {/* Username field */}
                     <FormField
                       control={loginForm.control}
                       name="username"
@@ -87,6 +94,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
+                    {/* Password field */}
                     <FormField
                       control={loginForm.control}
                       name="password"
@@ -114,6 +122,8 @@ export default function AuthPage() {
                   </form>
                 </Form>
               </TabsContent>
+
+              {/* Registration Form */}
               <TabsContent value="register">
                 <Form {...registerForm}>
                   <form
@@ -122,6 +132,7 @@ export default function AuthPage() {
                     )}
                     className="space-y-4"
                   >
+                    {/* Username field */}
                     <FormField
                       control={registerForm.control}
                       name="username"
@@ -138,6 +149,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
+                    {/* Password field */}
                     <FormField
                       control={registerForm.control}
                       name="password"
@@ -168,6 +180,8 @@ export default function AuthPage() {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Feature Description Card */}
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>D&D Companion</CardTitle>

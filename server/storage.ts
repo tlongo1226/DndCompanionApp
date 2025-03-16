@@ -2,33 +2,37 @@ import { Journal, Entity, InsertJournal, InsertEntity, InsertUser, User } from "
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
+// Create a memory store for session management
 const MemoryStore = createMemoryStore(session);
 
+// Interface defining all storage operations
 export interface IStorage {
-  // Users
+  // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
-  // Journals
+  // Journal operations
   getJournals(userId: number): Promise<Journal[]>;
   getJournal(id: number): Promise<Journal | undefined>;
   createJournal(journal: InsertJournal & { userId: number }): Promise<Journal>;
   updateJournal(id: number, journal: Partial<InsertJournal>): Promise<Journal>;
   deleteJournal(id: number): Promise<void>;
 
-  // Entities
+  // Entity operations
   getEntities(type?: string, userId?: number): Promise<Entity[]>;
   getEntity(id: number): Promise<Entity | undefined>;
   createEntity(entity: InsertEntity & { userId: number }): Promise<Entity>;
   updateEntity(id: number, entity: Partial<InsertEntity>): Promise<Entity>;
   deleteEntity(id: number): Promise<void>;
 
-  // Session store
+  // Session store for user authentication
   sessionStore: session.Store;
 }
 
+// In-memory implementation of the storage interface
 export class MemStorage implements IStorage {
+  // Use Maps to store our data in memory
   private journals: Map<number, Journal>;
   private entities: Map<number, Entity>;
   private users: Map<number, User>;
@@ -38,6 +42,7 @@ export class MemStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
+    // Initialize storage and counters
     this.journals = new Map();
     this.entities = new Map();
     this.users = new Map();
@@ -71,7 +76,7 @@ export class MemStorage implements IStorage {
     return newUser;
   }
 
-  // Updated Journal methods to include userId
+  // Journal methods - each method filters by userId for data isolation
   async getJournals(userId: number): Promise<Journal[]> {
     return Array.from(this.journals.values()).filter(j => j.userId === userId);
   }
@@ -107,12 +112,14 @@ export class MemStorage implements IStorage {
     this.journals.delete(id);
   }
 
-  // Updated Entity methods to include userId
+  // Entity methods - each method filters by userId for data isolation
   async getEntities(type?: string, userId?: number): Promise<Entity[]> {
     let entities = Array.from(this.entities.values());
+    // Filter by user ID if provided
     if (userId) {
       entities = entities.filter(e => e.userId === userId);
     }
+    // Filter by entity type if provided
     if (type) {
       entities = entities.filter(e => e.type === type);
     }
@@ -151,4 +158,5 @@ export class MemStorage implements IStorage {
   }
 }
 
+// Create and export a single instance of our storage
 export const storage = new MemStorage();

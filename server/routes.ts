@@ -9,13 +9,15 @@ export async function registerRoutes(app: Express) {
   // Set up authentication routes and middleware
   setupAuth(app);
 
-  // Journals
+  // Journal Routes
+  // GET /api/journals - Get all journals for the authenticated user
   app.get("/api/journals", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const journals = await storage.getJournals(req.user.id);
     res.json(journals);
   });
 
+  // GET /api/journals/:id - Get a specific journal by ID
   app.get("/api/journals/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -32,6 +34,7 @@ export async function registerRoutes(app: Express) {
     res.json(journal);
   });
 
+  // POST /api/journals - Create a new journal
   app.post("/api/journals", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const result = insertJournalSchema.safeParse(req.body);
@@ -46,6 +49,7 @@ export async function registerRoutes(app: Express) {
     res.json(journal);
   });
 
+  // PATCH /api/journals/:id - Update an existing journal
   app.patch("/api/journals/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -72,6 +76,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // DELETE /api/journals/:id - Delete a journal
   app.delete("/api/journals/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -89,7 +94,8 @@ export async function registerRoutes(app: Express) {
     res.status(204).end();
   });
 
-  // Entities
+  // Entity Routes
+  // GET /api/entities - Get all entities for the authenticated user
   app.get("/api/entities", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const type = req.query.type as string | undefined;
@@ -97,6 +103,7 @@ export async function registerRoutes(app: Express) {
     res.json(entities);
   });
 
+  // GET /api/entities/:id - Get a specific entity by ID
   app.get("/api/entities/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -113,6 +120,7 @@ export async function registerRoutes(app: Express) {
     res.json(entity);
   });
 
+  // POST /api/entities - Create a new entity
   app.post("/api/entities", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const result = insertEntitySchema.safeParse(req.body);
@@ -127,6 +135,7 @@ export async function registerRoutes(app: Express) {
     res.json(entity);
   });
 
+  // PATCH /api/entities/:id - Update an existing entity
   app.patch("/api/entities/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -153,6 +162,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // DELETE /api/entities/:id - Delete an entity
   app.delete("/api/entities/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const id = parseInt(req.params.id);
@@ -170,7 +180,7 @@ export async function registerRoutes(app: Express) {
     res.status(204).end();
   });
 
-  // Add this route with the other user-related routes
+  // DELETE /api/user - Delete user account and all associated data
   app.delete("/api/user", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 

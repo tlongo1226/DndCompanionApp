@@ -1,24 +1,4 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation, useRoute } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Entity, insertEntitySchema, entityTemplates, EntityType, entityTypes, relationshipTypes } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-// Autocomplete input component
+// Autocomplete input component for suggesting values while typing
 function AutocompleteInput({
   value,
   onChange,
@@ -33,10 +13,12 @@ function AutocompleteInput({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputValue, setInputValue] = useState(value);
 
+  // Keep input value in sync with parent component
   useEffect(() => {
     setInputValue(value);
   }, [value]);
 
+  // Filter suggestions based on current input
   const filteredSuggestions = suggestions.filter(
     suggestion => 
       suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
@@ -87,15 +69,17 @@ function AutocompleteInput({
   );
 }
 
-// EntityPage component
+// EntityPage component - handles creation and editing of entities (NPCs, locations, etc.)
 export default function EntityPage() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/entity/:type/:id/edit");
   const { toast } = useToast();
-  const type = entityTypes.includes(params?.type as EntityType) ? params?.type as EntityType : null;
-  const isNew = params?.id === "new"; // Moved this declaration to the top
 
-  // Initialize form
+  // Get entity type from URL params and validate it
+  const type = entityTypes.includes(params?.type as EntityType) ? params?.type as EntityType : null;
+  const isNew = params?.id === "new";
+
+  // Initialize form with Zod schema validation
   const form = useForm({
     resolver: zodResolver(insertEntitySchema),
     defaultValues: {
@@ -107,7 +91,7 @@ export default function EntityPage() {
     },
   });
 
-  // Fetch existing NPCs to get race suggestions
+  // Fetch existing NPCs to get race suggestions for autocomplete
   const { data: npcs } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "npc"],
     queryFn: async () => {
@@ -115,32 +99,35 @@ export default function EntityPage() {
       if (!res.ok) throw new Error("Failed to fetch NPCs");
       return res.json();
     },
-    enabled: type === "npc",
+    enabled: type === "npc", // Only fetch when viewing NPC form
   });
 
-  // Get unique races from existing NPCs
+  // Get unique races from existing NPCs for suggestions
   const raceOptions = [...new Set(npcs?.map(npc => npc.properties.race).filter(Boolean) || [])];
 
-  // Rest of your existing queries...
+  // Fetch entity data when editing existing entity
   const { data: entity, isLoading } = useQuery<Entity>({
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !isNew && !!params?.id,
   });
 
+  // Fetch locations for organization headquarters selection
   const { data: locations } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "location"],
     enabled: type === "organization",
   });
 
+  // Fetch organizations for location and NPC relationship fields
   const { data: organizations } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "organization"],
     enabled: type === "location" || type === "npc",
   });
 
+  // Update form when entity data is loaded
   useEffect(() => {
     if (entity) {
       form.reset(entity);
-    } else if (type === "organization") {
+    } else if (type) {
       form.reset({
         name: "",
         type: type,
@@ -151,6 +138,7 @@ export default function EntityPage() {
     }
   }, [entity, form, type]);
 
+  // Mutation for creating new entities
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("POST", "/api/entities", data);
@@ -166,6 +154,7 @@ export default function EntityPage() {
     },
   });
 
+  // Mutation for updating existing entities
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await apiRequest("PATCH", `/api/entities/${params?.id}`, data);
@@ -181,6 +170,7 @@ export default function EntityPage() {
     },
   });
 
+  // Handle form submission
   const onSubmit = (data: any) => {
     if (isNew) {
       createMutation.mutate(data);
@@ -189,6 +179,7 @@ export default function EntityPage() {
     }
   };
 
+  // Show loading state while fetching entity data
   if (!isNew && isLoading) {
     return (
       <div className="container p-6 mx-auto space-y-4">
@@ -198,6 +189,7 @@ export default function EntityPage() {
     );
   }
 
+  // Show error if invalid entity type
   if (!type) {
     return (
       <div className="container p-6 mx-auto">
@@ -215,6 +207,7 @@ export default function EntityPage() {
 
   return (
     <div className="container p-6 mx-auto">
+      {/* Back button */}
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -226,10 +219,12 @@ export default function EntityPage() {
         </Button>
       </div>
 
+      {/* Entity form */}
       <Card>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Name field */}
               <FormField
                 control={form.control}
                 name="name"
@@ -243,6 +238,7 @@ export default function EntityPage() {
                 )}
               />
 
+              {/* Description field */}
               <FormField
                 control={form.control}
                 name="description"
@@ -260,7 +256,9 @@ export default function EntityPage() {
                 )}
               />
 
+              {/* Dynamic fields based on entity type */}
               {Object.entries(entityTemplates[type]).map(([key]) => {
+                // Special handling for NPC race field with autocomplete
                 if (key === "race" && type === "npc") {
                   return (
                     <FormField
@@ -284,6 +282,7 @@ export default function EntityPage() {
                   );
                 }
 
+                // Special handling for NPC relationship type
                 if (key === "relationship" && type === "npc") {
                   return (
                     <FormField
@@ -319,6 +318,7 @@ export default function EntityPage() {
                   );
                 }
 
+                // Special handling for NPC organization membership
                 if (key === "organization" && type === "npc") {
                   return (
                     <FormField
@@ -355,6 +355,7 @@ export default function EntityPage() {
                   );
                 }
 
+                // Special handling for organization headquarters
                 if (key === "headquarters" && type === "organization") {
                   return (
                     <FormField
@@ -391,6 +392,7 @@ export default function EntityPage() {
                   );
                 }
 
+                // Special handling for location's active organizations
                 if (key === "activeOrganizations" && type === "location") {
                   return (
                     <FormField
@@ -424,6 +426,7 @@ export default function EntityPage() {
                                 ))}
                               </SelectContent>
                             </Select>
+                            {/* Display selected organizations with remove button */}
                             {field.value && field.value.length > 0 && (
                               <div className="mt-2 space-y-2">
                                 {field.value.map((orgId: string) => {
@@ -452,6 +455,7 @@ export default function EntityPage() {
                   );
                 }
 
+                // Default field rendering for other properties
                 return (
                   <FormField
                     key={key}
@@ -469,6 +473,7 @@ export default function EntityPage() {
                 );
               })}
 
+              {/* Form actions */}
               <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"

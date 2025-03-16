@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { capitalize } from "@/lib/utils";
 
+// Icon mapping for different entity types
 const categoryIcons = {
   npc: "👤",
   creature: "🐉",
@@ -20,19 +21,21 @@ const categoryIcons = {
 };
 
 export default function CategoryView() {
+  // Get entity type from URL parameters using wouter's useRoute
   const [, params] = useRoute("/category/:type");
   const [, setLocation] = useLocation();
   const type = params?.type as EntityType;
 
-  // Update the filter states to use "0" as default
+  // Filter state for NPCs - includes race, class, alignment, relationship, and organization
   const [filters, setFilters] = useState({
     race: "",
     class: "",
     alignment: "",
-    relationship: "0",
-    organization: "0",
+    relationship: "0", // "0" means "Any"
+    organization: "0", // "0" means "Any"
   });
 
+  // Fetch entities of the current type
   const { data: entities, isLoading } = useQuery<Entity[]>({
     queryKey: ["/api/entities", type],
     queryFn: async ({ queryKey }) => {
@@ -43,6 +46,7 @@ export default function CategoryView() {
   });
 
   // Fetch organizations for NPC filtering
+  // Only enabled when viewing NPCs to avoid unnecessary API calls
   const { data: organizations } = useQuery<Entity[]>({
     queryKey: ["/api/entities", "organization"],
     queryFn: async () => {
@@ -53,24 +57,29 @@ export default function CategoryView() {
     enabled: type === "npc",
   });
 
-  // Update the filtering logic to handle "0" as "Any"
+  // Filter entities based on the current filter state
   const filteredEntities = entities?.filter(entity => {
+    // If not viewing NPCs, return all entities
     if (type !== "npc") return true;
 
     const properties = entity.properties;
     return Object.entries(filters).every(([key, value]) => {
-      if (value === "0") return true; // Return true for "Any" selection
+      // "0" means "Any" - skip filtering
+      if (value === "0") return true;
       if (!value) return true;
+      // Handle organization and relationship exact matches
       if (key === "organization") {
         return properties[key] === value;
       }
       if (key === "relationship") {
         return properties[key] === value;
       }
+      // Handle text-based filters with case-insensitive includes
       return properties[key]?.toLowerCase().includes(value.toLowerCase());
     });
   });
 
+  // Show loading state while fetching entities
   if (isLoading) {
     return (
       <div className="container p-6 mx-auto space-y-4">
@@ -89,6 +98,7 @@ export default function CategoryView() {
 
   return (
     <div className="container p-6 mx-auto">
+      {/* Back navigation */}
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -100,6 +110,7 @@ export default function CategoryView() {
         </Button>
       </div>
 
+      {/* Page header with category icon and "New" button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-bold capitalize flex items-center gap-2">
           <span>{categoryIcons[type]}</span>
@@ -113,11 +124,12 @@ export default function CategoryView() {
         </Link>
       </div>
 
-      {/* Filter controls for NPCs */}
+      {/* NPC-specific filters */}
       {type === "npc" && (
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {/* Race filter */}
               <div className="space-y-2">
                 <Label>Race</Label>
                 <Input
@@ -127,6 +139,7 @@ export default function CategoryView() {
                 />
               </div>
 
+              {/* Class filter */}
               <div className="space-y-2">
                 <Label>Class</Label>
                 <Input
@@ -136,6 +149,7 @@ export default function CategoryView() {
                 />
               </div>
 
+              {/* Alignment filter */}
               <div className="space-y-2">
                 <Label>Alignment</Label>
                 <Input
@@ -145,6 +159,7 @@ export default function CategoryView() {
                 />
               </div>
 
+              {/* Relationship filter */}
               <div className="space-y-2">
                 <Label>Relationship</Label>
                 <Select
@@ -165,6 +180,7 @@ export default function CategoryView() {
                 </Select>
               </div>
 
+              {/* Organization filter */}
               <div className="space-y-2">
                 <Label>Organization</Label>
                 <Select
@@ -189,6 +205,7 @@ export default function CategoryView() {
         </Card>
       )}
 
+      {/* Entity grid display */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredEntities?.map((entity) => (
           <Link key={entity.id} href={`/entity/${type}/${entity.id}`}>
@@ -205,6 +222,7 @@ export default function CategoryView() {
           </Link>
         ))}
 
+        {/* Empty state */}
         {(filteredEntities?.length ?? 0) === 0 && (
           <Card className="col-span-full">
             <CardContent className="p-6 text-center text-muted-foreground">

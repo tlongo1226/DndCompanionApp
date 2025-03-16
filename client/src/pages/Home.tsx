@@ -8,24 +8,30 @@ import { Button } from "@/components/ui/button";
 import { Plus, ScrollText, Users, Building, Map, Sword } from "lucide-react";
 
 export default function Home() {
+  // Fetch recent journal entries
   const { data: journals, isLoading: loadingJournals } = useQuery<Journal[]>({ 
     queryKey: ["/api/journals"] 
   });
 
+  // Fetch all entities for stats display
   const { data: entities, isLoading: loadingEntities } = useQuery<Entity[]>({ 
     queryKey: ["/api/entities"] 
   });
 
   return (
     <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1524373050940-8f19e9b858a9')] bg-cover bg-fixed">
+      {/* Semi-transparent overlay for better text readability */}
       <div className="min-h-screen bg-background/95">
         <div className="container p-6 mx-auto grid gap-6">
+          {/* Page title with gradient text effect */}
           <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-red-600 bg-clip-text text-transparent">
             D&D Campaign Journal
           </h1>
 
           <div className="grid md:grid-cols-2 gap-6">
+            {/* Entity type quick stats grid */}
             <div className="grid grid-cols-2 gap-4 md:col-span-2">
+              {/* NPCs stat card */}
               <Link href="/category/npc">
                 <Card className="cursor-pointer hover:bg-accent transition-colors">
                   <CardContent className="p-4 text-center">
@@ -38,6 +44,7 @@ export default function Home() {
                 </Card>
               </Link>
 
+              {/* Creatures stat card */}
               <Link href="/category/creature">
                 <Card className="cursor-pointer hover:bg-accent transition-colors">
                   <CardContent className="p-4 text-center">
@@ -50,6 +57,7 @@ export default function Home() {
                 </Card>
               </Link>
 
+              {/* Locations stat card */}
               <Link href="/category/location">
                 <Card className="cursor-pointer hover:bg-accent transition-colors">
                   <CardContent className="p-4 text-center">
@@ -62,6 +70,7 @@ export default function Home() {
                 </Card>
               </Link>
 
+              {/* Organizations stat card */}
               <Link href="/category/organization">
                 <Card className="cursor-pointer hover:bg-accent transition-colors">
                   <CardContent className="p-4 text-center">
@@ -75,6 +84,7 @@ export default function Home() {
               </Link>
             </div>
 
+            {/* Recent journal entries section */}
             <Card className="md:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -89,7 +99,9 @@ export default function Home() {
                 </Link>
               </CardHeader>
               <CardContent>
+                {/* Scrollable area for journal entries */}
                 <ScrollArea className="h-[300px]">
+                  {/* Loading state */}
                   {loadingJournals ? (
                     <div className="space-y-2">
                       <Skeleton className="h-12 w-full" />
@@ -97,10 +109,12 @@ export default function Home() {
                       <Skeleton className="h-12 w-full" />
                     </div>
                   ) : journals?.length === 0 ? (
+                    // Empty state
                     <p className="text-muted-foreground text-center py-8">
                       No journal entries yet. Create your first one!
                     </p>
                   ) : (
+                    // Journal entries list
                     <div className="space-y-2">
                       {journals?.map((journal) => (
                         <Link key={journal.id} href={`/journal/${journal.id}`}>

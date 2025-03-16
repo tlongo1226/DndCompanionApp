@@ -2,13 +2,15 @@ import { pgTable, text, serial, integer, timestamp, json } from "drizzle-orm/pg-
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define the valid entity types for our D&D application
 export const entityTypes = ["npc", "creature", "location", "organization"] as const;
 export type EntityType = typeof entityTypes[number];
 
+// Define the types of relationships that can exist between NPCs
 export const relationshipTypes = ["ally", "acquaintance", "enemy"] as const;
 export type RelationshipType = typeof relationshipTypes[number];
 
-// Add user table
+// User table definition - stores basic user account information
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -16,7 +18,8 @@ export const users = pgTable("users", {
   created: timestamp("created").notNull().defaultNow(),
 });
 
-// Update journals to include user reference
+// Journal table definition - stores campaign notes and session logs
+// Each journal is associated with a user through userId
 export const journals = pgTable("journals", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -26,7 +29,8 @@ export const journals = pgTable("journals", {
   created: timestamp("created").notNull().defaultNow(),
 });
 
-// Update entities to include user reference
+// Entity table definition - stores NPCs, creatures, locations, and organizations
+// Each entity is associated with a user through userId
 export const entities = pgTable("entities", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -38,6 +42,7 @@ export const entities = pgTable("entities", {
   created: timestamp("created").notNull().defaultNow(),
 });
 
+// Create Zod schemas for validation, excluding auto-generated fields
 export const insertJournalSchema = createInsertSchema(journals).omit({ 
   id: true,
   userId: true,
@@ -50,7 +55,7 @@ export const insertEntitySchema = createInsertSchema(entities).omit({
   created: true 
 });
 
-// Update the insertUserSchema definition
+// User schema with password validation rules
 export const insertUserSchema = createInsertSchema(users)
   .extend({
     password: z.string()
@@ -64,6 +69,7 @@ export const insertUserSchema = createInsertSchema(users)
     created: true
   });
 
+// Export TypeScript types for use throughout the application
 export type Journal = typeof journals.$inferSelect;
 export type InsertJournal = z.infer<typeof insertJournalSchema>;
 export type Entity = typeof entities.$inferSelect;
@@ -71,14 +77,15 @@ export type InsertEntity = z.infer<typeof insertEntitySchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+// Templates for different entity types defining their specific properties
 export const entityTemplates: Record<EntityType, Record<string, any>> = {
   npc: {
     race: "",
     class: "",
     alignment: "",
     location: "",
-    relationship: "", 
-    organization: "", 
+    relationship: "", // Relationship with the party
+    organization: "", // Organization membership
   },
   creature: {
     type: "",
@@ -93,12 +100,12 @@ export const entityTemplates: Record<EntityType, Record<string, any>> = {
     population: "",
     government: "",
     description: "",
-    activeOrganizations: [], 
+    activeOrganizations: [], // Organizations present in this location
   },
   organization: {
     type: "",
     alignment: "",
-    headquarters: "", 
+    headquarters: "", // Reference to a location
     leader: "",
     goals: "",
   },

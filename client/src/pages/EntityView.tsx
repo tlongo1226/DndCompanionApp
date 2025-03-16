@@ -1,18 +1,3 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation, useRoute, Link } from "wouter";
-import { Entity, EntityType, entityTemplates } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Edit2, Check, X } from "lucide-react";
-import { capitalize } from "@/lib/utils";
-
 // EditableField component allows inline editing of entity fields
 interface EditableFieldProps {
   value: string | undefined;
@@ -69,18 +54,10 @@ function EditableField({ value, onSave, multiline }: EditableFieldProps) {
         />
       )}
       <div className="flex justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCancel}
-        >
+        <Button variant="ghost" size="icon" onClick={handleCancel}>
           <X className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSave}
-        >
+        <Button variant="ghost" size="icon" onClick={handleSave}>
           <Check className="h-4 w-4" />
         </Button>
       </div>
@@ -132,7 +109,6 @@ export default function EntityView() {
     enabled: type === "npc" && !!entity?.properties.organization && entity?.properties.organization !== "0",
   });
 
-
   // Mutation for updating individual fields
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Entity>) => {
@@ -178,6 +154,7 @@ export default function EntityView() {
 
   return (
     <div className="container p-6 mx-auto">
+      {/* Back navigation */}
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -190,6 +167,7 @@ export default function EntityView() {
       </div>
 
       <Card>
+        {/* Entity name with inline editing */}
         <CardHeader>
           <CardTitle>
             <EditableField
@@ -199,6 +177,7 @@ export default function EntityView() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Description with inline editing */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Description</h3>
             <EditableField
@@ -208,12 +187,15 @@ export default function EntityView() {
             />
           </div>
 
+          {/* Dynamic properties based on entity type */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Properties</h3>
             <div className="grid gap-4">
               {Object.entries(entityTemplates[type]).map(([key]) => (
                 <div key={key}>
                   <label className="text-sm font-medium capitalize">{key}</label>
+
+                  {/* Special handling for organization headquarters */}
                   {key === "headquarters" && type === "organization" ? (
                     headquarters ? (
                       <Link href={`/entity/location/${headquarters.id}`}>
@@ -223,6 +205,7 @@ export default function EntityView() {
                       <div className="text-muted-foreground">No headquarters set</div>
                     )
                   ) : key === "activeOrganizations" && type === "location" ? (
+                    // Special handling for location's active organizations
                     <div className="space-y-2">
                       {activeOrganizations?.length ? (
                         activeOrganizations.map((org) => (
@@ -235,12 +218,14 @@ export default function EntityView() {
                       )}
                     </div>
                   ) : key === "relationship" && type === "npc" ? (
+                    // Special handling for NPC relationships
                     <div className="text-foreground">
                       {entity.properties[key] ? capitalize(entity.properties[key]) : (
                         <span className="text-muted-foreground">No relationship set</span>
                       )}
                     </div>
                   ) : key === "organization" && type === "npc" ? (
+                    // Special handling for NPC organization membership
                     organization ? (
                       <Link href={`/entity/organization/${organization.id}`}>
                         <div className="text-primary hover:underline">{organization.name || "Untitled"}</div>
@@ -249,6 +234,7 @@ export default function EntityView() {
                       <div className="text-muted-foreground">No organization</div>
                     )
                   ) : (
+                    // Default editable field for other properties
                     <EditableField
                       value={entity.properties[key]}
                       onSave={(value) => handleFieldUpdate(`properties.${key}`, value)}
@@ -263,3 +249,18 @@ export default function EntityView() {
     </div>
   );
 }
+
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation, useRoute, Link } from "wouter";
+import { Entity, EntityType, entityTemplates } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Edit2, Check, X } from "lucide-react";
+import { capitalize } from "@/lib/utils";
