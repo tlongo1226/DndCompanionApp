@@ -20,20 +20,15 @@ export function Header() {
   return (
     <header className="border-b">
       <div className="container flex items-center justify-between h-16">
-        <h1 className="text-xl font-bold">D&D Companion</h1>
+        <h1 className="text-xl font-bold">Welcome {user?.username}</h1>
         {user && (
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Logged in as {user.username}
-            </span>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-            >
-              {logoutMutation.isPending ? "Logging out..." : "Logout"}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+          >
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
         )}
       </div>
     </header>
