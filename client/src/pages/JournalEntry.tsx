@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Journal, insertJournalSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Editor } from "@/components/Editor";
@@ -14,7 +14,6 @@ import { queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ReactMarkdown from 'react-markdown';
 
 function extractTitle(markdown: string): string {
   // Match any level header at the start of the content
@@ -44,7 +43,14 @@ export default function JournalEntry() {
 
   useEffect(() => {
     if (journal) {
-      form.reset(journal);
+      // Only update form if values are different to avoid unnecessary rerenders
+      if (journal.content !== form.getValues().content) {
+        form.reset({
+          content: journal.content,
+          title: journal.title,
+          tags: journal.tags,
+        });
+      }
     }
   }, [journal, form]);
 
@@ -86,11 +92,19 @@ export default function JournalEntry() {
     },
   });
 
-  const onSubmit = (data: any) => {
-    if (isNew) {
-      createMutation.mutate(data);
-    } else {
-      updateMutation.mutate(data);
+  const onSubmit = async (data: any) => {
+    try {
+      if (isNew) {
+        await createMutation.mutateAsync(data);
+      } else {
+        await updateMutation.mutateAsync(data);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save journal entry",
+        variant: "destructive",
+      });
     }
   };
 
@@ -118,54 +132,49 @@ export default function JournalEntry() {
 
       <Card>
         <CardContent className="p-6">
-          {!isNew ? (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {!isNew && (
                 <div className="flex justify-end mb-4">
-                  <Button type="submit" className="gap-2">
+                  <Button 
+                    type="submit" 
+                    className="gap-2"
+                    disabled={updateMutation.isPending}
+                  >
                     <Edit2 className="h-4 w-4" />
                     Save Changes
                   </Button>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Card className={cn(
-                          "prose prose-stone dark:prose-invert max-w-none min-h-[400px] p-4",
-                          "prose-headings:scroll-m-20",
-                          "prose-p:text-muted-foreground prose-p:leading-7",
-                          "prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80",
-                          "prose-blockquote:border-l-2 prose-blockquote:border-primary",
-                          "prose-blockquote:pl-6 prose-blockquote:italic",
-                          "prose-code:bg-muted prose-code:rounded-md prose-code:px-1 prose-code:py-0.5",
-                          "prose-img:rounded-lg prose-img:shadow-md"
-                        )}>
-                          <Editor value={field.value} onChange={field.onChange} defaultTab="preview" />
-                        </Card>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Editor value={field.value} onChange={field.onChange} defaultTab="write" />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+              )}
 
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Card className={cn(
+                        "prose prose-stone dark:prose-invert max-w-none min-h-[400px] p-4",
+                        "prose-headings:scroll-m-20",
+                        "prose-p:text-muted-foreground prose-p:leading-7",
+                        "prose-a:text-primary prose-a:underline hover:prose-a:text-primary/80",
+                        "prose-blockquote:border-l-2 prose-blockquote:border-primary",
+                        "prose-blockquote:pl-6 prose-blockquote:italic",
+                        "prose-code:bg-muted prose-code:rounded-md prose-code:px-1 prose-code:py-0.5",
+                        "prose-img:rounded-lg prose-img:shadow-md"
+                      )}>
+                        <Editor 
+                          value={field.value} 
+                          onChange={field.onChange} 
+                          defaultTab={isNew ? "write" : "preview"} 
+                        />
+                      </Card>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {isNew && (
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
@@ -174,13 +183,16 @@ export default function JournalEntry() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending}>
+                  <Button 
+                    type="submit" 
+                    disabled={createMutation.isPending}
+                  >
                     Create Entry
                   </Button>
                 </div>
-              </form>
-            </Form>
-          )}
+              )}
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
