@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Entity, EntityType } from "@shared/schema";
+import { Entity, EntityType, relationshipTypes } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { capitalize } from "@/lib/utils";
 
 const categoryIcons = {
   npc: "👤",
@@ -19,6 +24,15 @@ export default function CategoryView() {
   const [, setLocation] = useLocation();
   const type = params?.type as EntityType;
 
+  // Filter states for NPCs
+  const [filters, setFilters] = useState({
+    race: "",
+    class: "",
+    alignment: "",
+    relationship: "",
+    organization: "",
+  });
+
   const { data: entities, isLoading } = useQuery<Entity[]>({
     queryKey: ["/api/entities", type],
     queryFn: async ({ queryKey }) => {
@@ -26,6 +40,31 @@ export default function CategoryView() {
       if (!res.ok) throw new Error("Failed to fetch entities");
       return res.json();
     },
+  });
+
+  // Fetch organizations for NPC filtering
+  const { data: organizations } = useQuery<Entity[]>({
+    queryKey: ["/api/entities", "organization"],
+    queryFn: async () => {
+      const res = await fetch("/api/entities?type=organization");
+      if (!res.ok) throw new Error("Failed to fetch organizations");
+      return res.json();
+    },
+    enabled: type === "npc",
+  });
+
+  // Filter entities based on selected filters
+  const filteredEntities = entities?.filter(entity => {
+    if (type !== "npc") return true;
+
+    const properties = entity.properties;
+    return Object.entries(filters).every(([key, value]) => {
+      if (!value) return true;
+      if (key === "organization") {
+        return properties[key] === value;
+      }
+      return properties[key]?.toLowerCase().includes(value.toLowerCase());
+    });
   });
 
   if (isLoading) {
@@ -70,8 +109,84 @@ export default function CategoryView() {
         </Link>
       </div>
 
+      {/* Filter controls for NPCs */}
+      {type === "npc" && (
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <div className="space-y-2">
+                <Label>Race</Label>
+                <Input
+                  placeholder="Filter by race"
+                  value={filters.race}
+                  onChange={(e) => setFilters(prev => ({ ...prev, race: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Class</Label>
+                <Input
+                  placeholder="Filter by class"
+                  value={filters.class}
+                  onChange={(e) => setFilters(prev => ({ ...prev, class: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Alignment</Label>
+                <Input
+                  placeholder="Filter by alignment"
+                  value={filters.alignment}
+                  onChange={(e) => setFilters(prev => ({ ...prev, alignment: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Relationship</Label>
+                <Select
+                  value={filters.relationship}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, relationship: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Any</SelectItem>
+                    {relationshipTypes.map((relType) => (
+                      <SelectItem key={relType} value={relType}>
+                        {capitalize(relType)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Organization</Label>
+                <Select
+                  value={filters.organization}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, organization: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Any</SelectItem>
+                    {organizations?.map((org) => (
+                      <SelectItem key={org.id} value={org.id.toString()}>
+                        {org.name || "Untitled"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {entities?.map((entity) => (
+        {filteredEntities?.map((entity) => (
           <Link key={entity.id} href={`/entity/${type}/${entity.id}`}>
             <Card className="cursor-pointer hover:bg-accent transition-colors">
               <CardHeader>
@@ -86,7 +201,7 @@ export default function CategoryView() {
           </Link>
         ))}
 
-        {entities?.length === 0 && (
+        {(filteredEntities?.length ?? 0) === 0 && (
           <Card className="col-span-full">
             <CardContent className="p-6 text-center text-muted-foreground">
               No {type}s found. Create your first one!

@@ -241,7 +241,7 @@ export default function EntityPage() {
                 }
 
                 // Special handling for organization membership in NPCs
-                if (key === "organizationId" && type === "npc") {
+                if (key === "organization" && type === "npc") {
                   return (
                     <FormField
                       key={key}

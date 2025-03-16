@@ -128,8 +128,8 @@ export default function EntityView() {
 
   // Fetch organization data for NPCs
   const { data: organization } = useQuery<Entity>({
-    queryKey: [`/api/entities/${entity?.properties.organizationId}`],
-    enabled: type === "npc" && !!entity?.properties.organizationId && entity?.properties.organizationId !== "0",
+    queryKey: [`/api/entities/${entity?.properties.organization}`],
+    enabled: type === "npc" && !!entity?.properties.organization && entity?.properties.organization !== "0",
   });
 
 
@@ -240,7 +240,7 @@ export default function EntityView() {
                         <span className="text-muted-foreground">No relationship set</span>
                       )}
                     </div>
-                  ) : key === "organizationId" && type === "npc" ? (
+                  ) : key === "organization" && type === "npc" ? (
                     organization ? (
                       <Link href={`/entity/organization/${organization.id}`}>
                         <div className="text-primary hover:underline">{organization.name || "Untitled"}</div>

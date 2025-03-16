@@ -46,10 +46,9 @@ export const entityTemplates: Record<EntityType, Record<string, any>> = {
     race: "",
     class: "",
     alignment: "",
-    occupation: "",
     location: "",
     relationship: "", 
-    organizationId: "", 
+    organization: "", 
   },
   creature: {
     type: "",
