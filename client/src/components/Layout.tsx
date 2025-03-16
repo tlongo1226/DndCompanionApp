@@ -36,7 +36,7 @@ function NavLink({ href, icon, children }: NavLinkProps) {
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen grid grid-cols-[240px_1fr]">
-      <aside className="bg-slate-800 border-r border-slate-700 p-4 flex flex-col gap-2">
+      <nav className="bg-slate-800 border-r border-slate-700 flex flex-col p-4">
         <Link href="/">
           <h1 className="text-2xl font-bold text-white mb-6 hover:text-amber-400 transition-colors">
             D&D Journal
@@ -64,7 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             Organizations
           </NavLink>
         </div>
-      </aside>
+      </nav>
 
       <main className={cn(
         "bg-[url('https://images.unsplash.com/photo-1524373050940-8f19e9b858a9')] bg-cover bg-fixed",
