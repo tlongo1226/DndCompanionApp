@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertJournalSchema, insertEntitySchema } from "@shared/schema";
+import { insertJournalSchema, insertEntitySchema, entityTypes } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
 
@@ -99,6 +99,12 @@ export async function registerRoutes(app: Express) {
   app.get("/api/entities", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const type = req.query.type as string | undefined;
+
+    // If type is provided, validate it's a valid entity type
+    if (type && !entityTypes.includes(type)) {
+      return res.status(400).json({ message: "Invalid entity type" });
+    }
+
     const entities = await storage.getEntities(type, req.user.id);
     res.json(entities);
   });

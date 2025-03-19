@@ -115,14 +115,18 @@ export class MemStorage implements IStorage {
   // Entity methods - each method filters by userId for data isolation
   async getEntities(type?: string, userId?: number): Promise<Entity[]> {
     let entities = Array.from(this.entities.values());
+
     // Filter by user ID if provided
     if (userId) {
       entities = entities.filter(e => e.userId === userId);
     }
+
     // Filter by entity type if provided
+    // Important: This needs to be an exact match to prevent wrong type entities from showing up
     if (type) {
       entities = entities.filter(e => e.type === type);
     }
+
     return entities;
   }
 
