@@ -1,3 +1,22 @@
+/**
+ * auth-page.tsx
+ * 
+ * This page provides the authentication interface for the D&D Companion application.
+ * It includes both login and registration forms, with form validation and error handling.
+ * 
+ * Key features:
+ * - Two-column layout with forms and feature description
+ * - Tab-based switching between login and registration
+ * - Form validation using Zod schemas
+ * - Automatic redirection after successful authentication
+ * - Responsive design for various screen sizes
+ * 
+ * Works with:
+ * - useAuth hook for authentication state
+ * - ProtectedRoute for access control
+ * - @shared/schema.ts for validation schemas
+ */
+
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";

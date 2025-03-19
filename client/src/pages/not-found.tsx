@@ -1,3 +1,20 @@
+/**
+ * not-found.tsx
+ * 
+ * The 404 page component for the D&D Companion application.
+ * Displayed when users navigate to non-existent routes or encounter routing errors.
+ * 
+ * Key features:
+ * - Clear error messaging
+ * - Visual feedback with icon
+ * - Simple, clean design
+ * - Responsive layout
+ * 
+ * Works with:
+ * - App.tsx for route handling
+ * - ui/card for layout structure
+ */
+
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 

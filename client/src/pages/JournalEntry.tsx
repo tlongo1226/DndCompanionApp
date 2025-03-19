@@ -1,3 +1,23 @@
+/**
+ * JournalEntry.tsx
+ * 
+ * Provides the journal entry creation and editing interface for the D&D Companion.
+ * This page handles markdown content editing, automatic title extraction,
+ * and real-time preview of journal entries.
+ * 
+ * Key features:
+ * - Rich markdown editor with preview
+ * - Automatic title extraction from first heading
+ * - Real-time content updates
+ * - Loading and error states
+ * - Responsive layout
+ * 
+ * Works with:
+ * - Editor.tsx for markdown editing
+ * - Home.tsx for journal listing
+ * - @shared/schema.ts for journal type definitions
+ */
+
 import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";

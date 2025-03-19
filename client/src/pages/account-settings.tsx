@@ -1,3 +1,24 @@
+/**
+ * account-settings.tsx
+ * 
+ * User settings page for the D&D Companion application.
+ * Provides interface for managing user account preferences,
+ * theme customization, and account deletion.
+ * 
+ * Key features:
+ * - Display user profile information
+ * - Theme customization (variant and appearance)
+ * - Account deletion with confirmation
+ * - Real-time theme preview
+ * - Persistent theme settings
+ * 
+ * Works with:
+ * - useAuth hook for user data
+ * - useToast for notifications
+ * - AlertDialog for confirmations
+ * - Theme configuration in theme.json
+ */
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";

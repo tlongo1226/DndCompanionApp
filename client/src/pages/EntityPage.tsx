@@ -1,3 +1,23 @@
+/**
+ * EntityPage.tsx
+ * 
+ * Provides the creation and editing interface for all entity types in the D&D Companion.
+ * This page handles form submission, validation, and dynamic field rendering based on
+ * entity type (NPC, Creature, Location, Organization).
+ * 
+ * Key features:
+ * - Dynamic form fields based on entity type
+ * - Autocomplete suggestions for certain fields (e.g., NPC race)
+ * - Relationship management between entities
+ * - Rich validation using Zod schemas
+ * - Responsive layout with proper error handling
+ * 
+ * Works with:
+ * - CategoryView.tsx for list navigation
+ * - EntityView.tsx for detail view
+ * - @shared/schema.ts for entity type definitions and validation
+ */
+
 import { useLocation, useRoute } from "wouter";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
