@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Entity, EntityType, relationshipTypes } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Filter } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -35,11 +35,28 @@ export default function CategoryView() {
     organization: "0", // "0" means "Any"
   });
 
+  // Validate that we have a valid entity type
+  if (!type || !Object.keys(categoryIcons).includes(type)) {
+    return (
+      <div className="container p-6 mx-auto">
+        <h1 className="text-2xl font-bold text-red-600">Invalid category type</h1>
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/")}
+          className="gap-2 mt-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+    );
+  }
+
   // Fetch entities of the current type
   const { data: entities, isLoading } = useQuery<Entity[]>({
     queryKey: ["/api/entities", type],
     queryFn: async ({ queryKey }) => {
-      const res = await fetch(`/api/entities?type=${queryKey[1]}`);
+      const res = await fetch(`/api/entities?type=${type}`);
       if (!res.ok) throw new Error("Failed to fetch entities");
       return res.json();
     },
@@ -59,7 +76,7 @@ export default function CategoryView() {
 
   // Filter entities based on the current filter state
   const filteredEntities = entities?.filter(entity => {
-    // If not viewing NPCs, return all entities
+    // Skip filtering for non-NPC entities
     if (type !== "npc") return true;
 
     const properties = entity.properties;

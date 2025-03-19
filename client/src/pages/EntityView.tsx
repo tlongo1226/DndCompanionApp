@@ -72,10 +72,40 @@ export default function EntityView() {
   const { toast } = useToast();
   const type = params?.type as EntityType;
 
+  // Validate that we have a valid entity type
+  if (!type || !Object.keys(entityTemplates).includes(type)) {
+    return (
+      <div className="container p-6 mx-auto">
+        <h1 className="text-2xl font-bold text-red-600">Invalid entity type</h1>
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/")}
+          className="gap-2 mt-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+    );
+  }
+
   // Fetch entity data
   const { data: entity, isLoading } = useQuery<Entity>({
     queryKey: [`/api/entities/${params?.id}`],
     enabled: !!params?.id,
+    // Add validation to ensure the entity type matches the URL
+    select: (data) => {
+      if (data?.type !== type) {
+        toast({
+          title: "Error",
+          description: `This entity is not a ${type}`,
+          variant: "destructive",
+        });
+        setLocation(`/entity/${data?.type}/${data?.id}`);
+        return undefined;
+      }
+      return data;
+    },
   });
 
   // Fetch headquarters data for organizations
@@ -133,8 +163,8 @@ export default function EntityView() {
       updateMutation.mutate({
         properties: {
           ...entity?.properties,
-          [propertyKey]: value
-        }
+          [propertyKey]: value,
+        },
       });
     } else {
       // Update a main field (name or description)
