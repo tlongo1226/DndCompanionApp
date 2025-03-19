@@ -1,3 +1,22 @@
+/**
+ * storage.ts
+ * 
+ * This file implements the in-memory storage system for the D&D Companion application.
+ * It provides a data persistence layer that maintains user data, journals, and entities
+ * in memory during the application's runtime.
+ * 
+ * Key features:
+ * - In-memory data storage using Maps
+ * - User data isolation
+ * - Session management
+ * - CRUD operations for journals and entities
+ * 
+ * Works with:
+ * - routes.ts for handling API requests
+ * - auth.ts for session storage
+ * - @shared/schema.ts for type definitions
+ */
+
 import { Journal, Entity, InsertJournal, InsertEntity, InsertUser, User } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";

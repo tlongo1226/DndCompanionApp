@@ -1,3 +1,21 @@
+/**
+ * routes.ts
+ * 
+ * This file defines all the API routes for the D&D Companion application.
+ * It handles HTTP requests for journals, entities, and user management.
+ * 
+ * Key features:
+ * - Authentication protection for all routes
+ * - CRUD operations for journals and entities
+ * - User data management and account deletion
+ * - Type validation for entity operations
+ * 
+ * Works with:
+ * - storage.ts for data persistence
+ * - auth.ts for authentication middleware
+ * - @shared/schema.ts for type definitions
+ */
+
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";

@@ -1,3 +1,21 @@
+/**
+ * Home.tsx
+ * 
+ * The main dashboard component for the D&D Companion application.
+ * Displays an overview of the user's campaign elements and recent activity.
+ * 
+ * Key features:
+ * - Quick stats for different entity types (NPCs, Creatures, etc.)
+ * - Recent journal entries display
+ * - Navigation to entity categories
+ * - Background styling with overlay for readability
+ * 
+ * Works with:
+ * - Layout.tsx for page structure
+ * - CategoryView.tsx for detailed entity lists
+ * - @shared/schema.ts for type definitions
+ */
+
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Journal, Entity } from "@shared/schema";

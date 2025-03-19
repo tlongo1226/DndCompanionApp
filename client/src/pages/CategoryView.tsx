@@ -1,3 +1,21 @@
+/**
+ * CategoryView.tsx
+ * 
+ * Displays and manages lists of entities by category (NPCs, Creatures, Locations, Organizations).
+ * Provides filtering and navigation to individual entity views.
+ * 
+ * Key features:
+ * - Entity type-specific filtering (especially for NPCs)
+ * - Grid layout for entity cards
+ * - Navigation to entity creation/editing
+ * - Loading and empty states
+ * 
+ * Works with:
+ * - EntityView.tsx for detailed entity display
+ * - EntityPage.tsx for entity creation/editing
+ * - Layout.tsx for page structure
+ */
+
 import { useState } from "react";
 import { useRoute } from "wouter";
 import { Link, useLocation } from "wouter";

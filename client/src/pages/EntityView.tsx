@@ -1,3 +1,22 @@
+/**
+ * EntityView.tsx
+ * 
+ * Displays and manages individual entity details with inline editing capabilities.
+ * Handles different entity types (NPCs, Creatures, Locations, Organizations) with
+ * type-specific property displays and relationships.
+ * 
+ * Key features:
+ * - Inline editing of entity properties
+ * - Type-specific property display
+ * - Entity relationship management
+ * - Real-time updates
+ * 
+ * Works with:
+ * - CategoryView.tsx for list navigation
+ * - EntityPage.tsx for full editing
+ * - @shared/schema.ts for entity type definitions
+ */
+
 // EditableField component allows inline editing of entity fields
 interface EditableFieldProps {
   value: string | undefined;

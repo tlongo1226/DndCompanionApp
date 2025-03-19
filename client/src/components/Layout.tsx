@@ -1,3 +1,21 @@
+/**
+ * Layout.tsx
+ * 
+ * Provides the main application layout structure with navigation sidebar.
+ * This component wraps all pages and provides consistent navigation and styling.
+ * 
+ * Key features:
+ * - Responsive sidebar navigation
+ * - Active route highlighting
+ * - Consistent page structure
+ * - Background styling
+ * 
+ * Works with:
+ * - All page components
+ * - ui/header.tsx for top navigation
+ * - Theme configuration for styling
+ */
+
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ScrollText, Users, Building, Map, Sword } from "lucide-react";
@@ -21,8 +39,8 @@ function NavLink({ href, icon, children }: NavLinkProps) {
           "w-full justify-start gap-2",
           "text-white hover:text-white",
           "transition-all duration-200",
-          isActive 
-            ? "bg-amber-600/80 hover:bg-amber-600/90 shadow-md" 
+          isActive
+            ? "bg-amber-600/80 hover:bg-amber-600/90 shadow-md"
             : "hover:bg-white/10 hover:translate-x-1"
         )}
       >
